@@ -33,9 +33,36 @@
 	========================================================================================================================
 	-->
 
+	<!-- Graph Build with ProjectReference -->
+	<ItemGroup>
+		<ProjectReferenceTargets Include="Initialize" Targets="Initialize"/>
+		<ProjectReferenceTargets Include="Summary" Targets="Summary"/>
+	</ItemGroup>
+
+	<!-- Targets for the Solution Context -->
+
+	<PropertyGroup>
+		<!-- Initialize -->
+		<InitializeDependsOn>ResolveReferences</InitializeDependsOn>
+		<!-- Summary -->
+		<SummaryDependsOn>ResolveReferences</SummaryDependsOn>
+	</PropertyGroup>
+
 	<!-- Initial Target for the Solution Context -->
 
 	<Target Name="Initialize" DependsOnTargets="$(InitializeDependsOn)">
+		<Message Importance="Low" Text="$(MSBuildSolutionName) is initializing."/>
+
+		<MSBuild
+			Targets="Initialize"
+			Projects="@(_ResolvedProject->'%(HintPath)')"
+			Properties="%(_ResolvedProject.Properties)"
+			BuildInParallel="$(BuildInParallel)"
+			ContinueOnError="$(ContinueOnError)"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)"/>
+
 		<Message Importance="Low" Text="$(MSBuildSolutionName) is initialized."/>
 	</Target>
 
@@ -43,6 +70,18 @@
 
 	<Target Name="Summary" DependsOnTargets="$(SummaryDependsOn)">
 		<Message Importance="High" Text="$(MSBuildSolutionName) ($(Configuration)|$(Platform)) [$(MSBuildSolutionDirectory)]"/>
+
+		<MSBuild
+			Targets="Summary"
+			Projects="@(_ResolvedProject->'%(HintPath)')"
+			Properties="%(_ResolvedProject.Properties)"
+			BuildInParallel="$(BuildInParallel)"
+			ContinueOnError="$(ContinueOnError)"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)"/>
+
+		<Message Importance="High" Text="These are all the summaries of the projects present/found in $(MSBuildSolutionName) solution."/>
 	</Target>
 
 </Project>

@@ -6,4 +6,266 @@
 
 	<Import Project="MSBuild.OutputPaths.targets"/>
 
+	<!--
+	========================================================================================================================
+														TARGETS
+	========================================================================================================================
+	-->
+
+	<!-- Graph Build with ProjectReference -->
+	<ItemGroup>
+		<ProjectReferenceTargets Include="Restore" Targets="Restore"/>
+		<ProjectReferenceTargets Include="Build" Targets="Build"/>
+		<ProjectReferenceTargets Include="Clean" Targets="Clean"/>
+		<ProjectReferenceTargets Include="Rebuild" Targets="Rebuild"/>
+		<ProjectReferenceTargets Include="Test" Targets="Test"/>
+		<ProjectReferenceTargets Include="Pack" Targets="Pack"/>
+		<ProjectReferenceTargets Include="Publish" Targets="Publish"/>
+	</ItemGroup>
+
+	<!-- Common Targets for the Solution Context -->
+
+	<PropertyGroup>
+		<!-- CollectReferences -->
+		<CollectReferencesDependsOn>CollectProjectReferences;CollectPackageReferences</CollectReferencesDependsOn>
+		<!-- PrepareReferences -->
+		<PrepareReferencesDependsOn>PrepareProjectReferences;PreparePackageReferences</PrepareReferencesDependsOn>
+		<!-- ResolveReferences -->
+		<ResolveReferencesDependsOn>ResolveProjectReferences;ResolvePackageReferences</ResolveReferencesDependsOn>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- Restore -->
+		<RestoreDependsOn>RestoreCheck;ResolveReferences</RestoreDependsOn>
+		<!-- Build -->
+		<BuildDependsOn>BuildCheck;BuildOnlySettings;ResolveReferences</BuildDependsOn>
+		<!-- Clean -->
+		<CleanDependsOn>BuildCheck;CleanBuildFolder;PublishCheck;CleanPublishFolder;PrepareReferences</CleanDependsOn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(NoBuild)' != 'true'">
+		<!-- Test -->
+		<TestDependsOn>BuildCheck;Build</TestDependsOn>
+		<!-- Pack -->
+		<PackDependsOn>BuildCheck;Build</PackDependsOn>
+		<!-- Publish -->
+		<PublishDependsOn>BuildCheck;Build</PublishDependsOn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(NoBuild)' == 'true'">
+		<!-- Test -->
+		<TestDependsOn>ResolveReferences</TestDependsOn>
+		<!-- Pack -->
+		<PackDependsOn>ResolveReferences</PackDependsOn>
+		<!-- Publish -->
+		<PublishDependsOn>ResolveReferences</PublishDependsOn>
+	</PropertyGroup>
+
+	<!-- Targets for PackageReference protocol -->
+
+	<Target Name="CollectPackageReferences" Returns="@(PackageReference)"/>
+
+	<Target Name="PreparePackageReferences">
+		<Warning Code="SLNX0000" File="[MSBuild.Solution.Sdk]" Text="The Solution does not implement 'PreparePackageReferences' operation."/>
+	</Target>
+
+	<Target Name="ResolvePackageReferences" Returns="@(_ResolvedPackage)">
+		<ItemGroup>
+			<_ResolvedPackage Include="@(PackageReference->ClearMetadata())">
+				<!-- Enable/Disable Package Reference Actions through metadata -->
+				<Restore Condition="'%(PackageReference.Restore)' != ''">%(PackageReference.Restore)</Restore>
+				<Pack Condition="'%(PackageReference.Pack)' != ''">%(PackageReference.Pack)</Pack>
+				<Publish Condition="'%(PackageReference.Publish)' != ''">%(PackageReference.Publish)</Publish>
+				<!-- Package Properties populated from metadata and additional properties declared in solution -->
+				<Platform Condition="'%(PackageReference.Platform)' != ''">%(PackageReference.Platform)</Platform>
+				<SolutionDirectory Condition="'%(PackageReference.InSolution)' == 'true'">$(MSBuildSolutionDirectory)</SolutionDirectory>
+			</_ResolvedPackage>
+		</ItemGroup>
+	</Target>
+
+	<!-- Targets for ProjectReference protocol -->
+
+	<Target Name="CollectProjectReferences" Returns="@(ProjectReference)"/>
+
+	<Target Name="PrepareProjectReferences">
+		<Warning Code="SLNX0000" File="[MSBuild.Solution.Sdk]" Text="The Solution does not implement 'PrepareProjectReferences' operation."/>
+	</Target>
+
+	<Target Name="ResolveProjectReferences" Returns="@(_ResolvedProject)">
+		<ItemGroup>
+			<_ResolvedProject Include="@(ProjectReference->ClearMetadata())">
+				<!-- Enable/Disable Project Reference Targets through metadata -->
+				<Restore Condition="'%(ProjectReference.Restore)' != ''">%(ProjectReference.Restore)</Restore>
+				<Build Condition="'%(ProjectReference.Build)' != ''">%(ProjectReference.Build)</Build>
+				<Clean Condition="'%(ProjectReference.Clean)' != ''">%(ProjectReference.Clean)</Clean>
+				<Rebuild Condition="'%(ProjectReference.Rebuild)' != ''">%(ProjectReference.Rebuild)</Rebuild>
+				<Test Condition="'%(ProjectReference.Test)' != ''">%(ProjectReference.Test)</Test>
+				<Pack Condition="'%(ProjectReference.Pack)' != ''">%(ProjectReference.Pack)</Pack>
+				<Publish Condition="'%(ProjectReference.Publish)' != ''">%(ProjectReference.Publish)</Publish>
+				<!-- Project Properties populated from metadata and additional properties declared in solution -->
+				<Properties Condition="'%(ProjectReference.Configuration)' != ''">Configuration=%(ProjectReference.Configuration)</Properties>
+				<Properties Condition="'%(ProjectReference.Platform)' != ''">%(_ResolvedProject.Properties);Platform=%(ProjectReference.Platform)</Properties>
+				<Properties Condition="'%(ProjectReference.AdditionalProperties)' != ''">%(_ResolvedProject.Properties);%(ProjectReference.AdditionalProperties)</Properties>
+				<Properties Condition="'%(ProjectReference.InSolution)' == 'true'">%(_ResolvedProject.Properties);MSBuildSolutionDirectory=$(MSBuildSolutionDirectory)</Properties>
+			</_ResolvedProject>
+
+			<_ProjectItemMetadata Include="@(ProjectItem->'%(Filename)')">
+				<OriginalItemSpec>%(ProjectItem.Identity)</OriginalItemSpec>
+				<ProjectFullPath>%(ProjectItem.FullPath)</ProjectFullPath>
+			</_ProjectItemMetadata>
+
+			<!--
+				Item under target does not support `Update` operation.
+				HACK: So, we use batching across two items with matching Identity metadata
+				to copy metadata from one item to the other. There can be multiple values
+				for a selected metadata if the item contains duplicates since we are using
+				batch transforms to get the metadata.
+			-->
+			<_ResolvedProject Condition="'%(Identity)' != '' AND '@(_ResolvedProject)' != '' AND '@(_ProjectItemMetadata)' != ''">
+				<!-- Absolute Path to the Project File on Disk -->
+				<HintPath>@(_ProjectItemMetadata->'%(ProjectFullPath)')</HintPath>
+			</_ResolvedProject>
+
+			<_ProjectItemMetadata Remove="@(_ProjectItemMetadata)"/>
+		</ItemGroup>
+	</Target>
+
+	<Target Name="CollectReferences" DependsOnTargets="$(CollectReferencesDependsOn)" Returns="@(ProjectReference);@(PackageReference)"/>
+
+	<Target Name="PrepareReferences" DependsOnTargets="$(PrepareReferencesDependsOn)">
+		<Warning Code="SLNX0000" File="[MSBuild.Solution.Sdk]" Text="The Solution does not implement 'PrepareReferences' operation."/>
+	</Target>
+
+	<Target Name="ResolveReferences" DependsOnTargets="$(ResolveReferencesDependsOn)" Returns="@(_ResolvedProject);@(_ResolvedPackage)">
+		<Warning Code="SLNX0000" File="[MSBuild.Solution.Sdk]" Text="The Solution does not implement 'ResolveReferences' operation."/>
+	</Target>
+
+	<Target Name="RestoreCheck">
+		<Warning Code="SLNX0000" File="[MSBuild.Solution.Sdk]" Text="The Solution does not implement 'RestoreCheck' operation."/>
+	</Target>
+
+	<Target Name="Restore" DependsOnTargets="$(RestoreDependsOn)">
+		<MSBuild
+			Targets="Restore"
+			Projects="@(_ResolvedProject->'%(HintPath)')"
+			Properties="%(_ResolvedProject.Properties)"
+			Condition="'%(_ResolvedProject.Restore)' != 'false'"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)"
+			BuildInParallel="$([MSBuild]::ValueOrDefault('$(CleanInParallel)', '$(BuildInParallel)'))"
+			ContinueOnError="$([MSBuild]::ValueOrDefault('$(CleanContinueOnError)', '$(ContinueOnError)'))"/>
+	</Target>
+
+	<PropertyGroup>
+		<BuildingProject>false</BuildingProject>
+		<BuildingSolution>false</BuildingSolution>
+		<BuildingSolutionFile>false</BuildingSolutionFile>
+	</PropertyGroup>
+
+	<Target Name="BuildOnlySettings">
+		<PropertyGroup>
+			<BuildingProject>true</BuildingProject>
+			<BuildingSolution>true</BuildingSolution>
+			<BuildingSolutionFile>true</BuildingSolutionFile>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="BuildCheck">
+		<Warning Code="SLNX0000" File="[MSBuild.Solution.Sdk]" Text="The Solution does not implement 'BuildCheck' operation."/>
+	</Target>
+
+	<Target Name="Build" DependsOnTargets="$(BuildDependsOn)" Returns="@(CollectedBuildOutput)">
+		<MSBuild
+			Targets="Build"
+			Projects="@(_ResolvedProject->'%(HintPath)')"
+			Properties="%(_ResolvedProject.Properties)"
+			Condition="'%(_ResolvedProject.Build)' != 'false'"
+			BuildInParallel="$(BuildInParallel)"
+			ContinueOnError="$(ContinueOnError)"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)">
+
+			<!-- Collect the Build Outputs -->
+			<Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
+		</MSBuild>
+	</Target>
+
+	<Target Name="CleanBuildFolder">
+		<Warning Code="SLNX0000" File="[MSBuild.Solution.Sdk]" Text="The Solution does not implement 'CleanBuildFolder' operation."/>
+	</Target>
+
+	<Target Name="CleanPublishFolder">
+		<Warning Code="SLNX0000" File="[MSBuild.Solution.Sdk]" Text="The Solution does not implement 'CleanPublishFolder' operation."/>
+	</Target>
+
+	<Target Name="Clean" DependsOnTargets="$(CleanDependsOn)">
+		<MSBuild
+			Targets="Clean"
+			Projects="@(_ResolvedProject->Reverse()->'%(HintPath)')"
+			Properties="%(_ResolvedProject.Properties)"
+			Condition="'%(_ResolvedProject.Clean)' != 'false'"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)"
+			BuildInParallel="$([MSBuild]::ValueOrDefault('$(CleanInParallel)', '$(BuildInParallel)'))"
+			ContinueOnError="$([MSBuild]::ValueOrDefault('$(CleanContinueOnError)', '$(ContinueOnError)'))"/>
+	</Target>
+
+	<Target Name="Rebuild" DependsOnTargets="$(RebuildDependsOn)" Returns="@(CollectedBuildOutput)">
+		<Message Importance="High" Text="Rebuilding all projects in the solution..."/>
+	</Target>
+
+	<Target Name="MSTest" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+		<Warning Code="SLNX0000" File="[MSBuild.Solution.Sdk]" Text="The Solution does not implement 'MSTest' operation."/>
+	</Target>
+
+	<Target Name="VSTest" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+		<Warning Code="SLNX0000" File="[MSBuild.Solution.Sdk]" Text="The Solution does not implement 'VSTest' operation."/>
+	</Target>
+
+	<Target Name="Test" DependsOnTargets="$(TestDependsOn)">
+		<MSBuild
+			Targets="Test"
+			Projects="@(_ResolvedProject->'%(HintPath)')"
+			Properties="%(_ResolvedProject.Properties)"
+			Condition="'%(_ResolvedProject.Test)' != 'false'"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)"
+			BuildInParallel="$([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))"
+			ContinueOnError="$([MSBuild]::ValueOrDefault('$(TestContinueOnError)', '$(ContinueOnError)'))"/>
+	</Target>
+
+	<Target Name="Pack" DependsOnTargets="$(PackDependsOn)">
+		<MSBuild
+			Targets="Pack"
+			Projects="@(_ResolvedProject->'%(HintPath)')"
+			Properties="%(_ResolvedProject.Properties)"
+			Condition="'%(_ResolvedProject.Pack)' != 'false'"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)"
+			BuildInParallel="$([MSBuild]::ValueOrDefault('$(PackInParallel)', '$(BuildInParallel)'))"
+			ContinueOnError="$([MSBuild]::ValueOrDefault('$(PackContinueOnError)', '$(ContinueOnError)'))"/>
+	</Target>
+
+	<Target Name="PublishCheck">
+		<Warning Code="SLNX0000" File="[MSBuild.Solution.Sdk]" Text="The Solution does not implement 'PublishCheck' operation."/>
+	</Target>
+
+	<Target Name="Publish" DependsOnTargets="$(PublishDependsOn)">
+		<MSBuild
+			Targets="Publish"
+			Projects="@(_ResolvedProject->'%(HintPath)')"
+			Properties="%(_ResolvedProject.Properties)"
+			Condition="'%(_ResolvedProject.Publish)' != 'false'"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)"
+			BuildInParallel="$([MSBuild]::ValueOrDefault('$(PublishInParallel)', '$(BuildInParallel)'))"
+			ContinueOnError="$([MSBuild]::ValueOrDefault('$(PublishContinueOnError)', '$(ContinueOnError)'))"/>
+	</Target>
+
 </Project>
