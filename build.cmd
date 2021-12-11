@@ -11,7 +11,7 @@ set MSBuildSDKsPath=%RepoDir%\Source
 
 set "BuildFile=%~dp1"
 if "%BuildFile%" == "" (
-	set BuildFile=MSBuild-Sdks.sln
+	set BuildFile=MSBuild-SDKs.sln
 )
 
 if "%Configuration%" == "" set Configuration=Release

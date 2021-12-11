@@ -24,7 +24,7 @@
 	<!--
 		Detect the SDK version. For now, we have to check the 'NETCoreSdkVersion' property for .NET 5+ SDKs
 		else check 'BundledNETCoreAppTargetFrameworkVersion' property for Sdk <= 2.1.200
-		else Give 1.0 version since those properties don't exist in 1.x Sdks
+		else Give 1.0 version since those properties don't exist in 1.x SDKs
 	-->
 	<PropertyGroup>
 		<!-- Handle SemVer version like 3.1.300-preview and 2.1.200, since MSBuild compares only first 2 version parts. -->

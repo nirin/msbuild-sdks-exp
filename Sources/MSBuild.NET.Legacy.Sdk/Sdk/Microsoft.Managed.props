@@ -13,7 +13,7 @@
 	<PropertyGroup Condition="'$(IsGraphBuild)' == 'true'">
 		<InnerBuildProperty>TargetFramework</InnerBuildProperty>
 		<OuterBuildProperty>TargetFrameworks</OuterBuildProperty>
-		<!-- TODO: Remove when no longet needed! -->
+		<!-- TODO: Remove when no longer needed! -->
 		<InnerBuildPropertyValues>$(OuterBuildProperty)</InnerBuildPropertyValues>
 	</PropertyGroup>
 

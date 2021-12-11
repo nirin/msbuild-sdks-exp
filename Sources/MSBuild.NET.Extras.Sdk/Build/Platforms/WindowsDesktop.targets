@@ -6,7 +6,7 @@
 		<!-- Main .NET SDK location -->
 		<MicrosoftNETSdkTargetsPath Condition="!Exists('$(MicrosoftNETSdkTargetsPath)')">$(MSBuildSdksPath)\Microsoft.NET.Sdk\targets\</MicrosoftNETSdkTargetsPath>
 		<MicrosoftNETSdkTargetsPath Condition="!Exists('$(MicrosoftNETSdkTargetsPath)')">$(MSBuildSdksPath)\Microsoft.NET.Sdk\build\</MicrosoftNETSdkTargetsPath>
-		<!-- MSBuild Sdk is an another MSBuild Extension -->
+		<!-- MSBuild SDK is an another MSBuild Extension -->
 		<MicrosoftNETSdkTargetsPath Condition="!Exists('$(MicrosoftNETSdkTargetsPath)')">$(MSBuildExtensionsPath)\Sdks\Microsoft.NET.Sdk\targets\</MicrosoftNETSdkTargetsPath>
 		<MicrosoftNETSdkTargetsPath Condition="!Exists('$(MicrosoftNETSdkTargetsPath)')">$(MSBuildExtensionsPath)\Sdks\Microsoft.NET.Sdk\build\</MicrosoftNETSdkTargetsPath>
 		<!-- Check in Other known paths -->
