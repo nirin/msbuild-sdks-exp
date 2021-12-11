@@ -1,4 +1,4 @@
-<Project>
+<Project InitialTargets="ValidateWorkflowTargets">
 
 	<PropertyGroup>
 		<MicrosoftWorkflowTargets Condition="'$(MSBuildProjectExtension)' == '.csproj'">Workflow.CSharp.targets</MicrosoftWorkflowTargets>

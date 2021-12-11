@@ -4,6 +4,8 @@
 
 	<Import Project="Microsoft.Managed.props"/>
 
+	<Import Project="$(MSBuildProjectFullPath).user" Condition="Exists('$(MSBuildProjectFullPath).user')"/>
+
 	<!-- When we are doing a multi-targeting build, this import is redirected to $(MSBuildThisFileName).CrossTargeting.targets. -->
 	<Choose>
 		<When Condition="'$(IsOuterBuild)' == 'true'">
