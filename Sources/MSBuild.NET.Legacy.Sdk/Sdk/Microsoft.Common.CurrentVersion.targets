@@ -164,6 +164,23 @@
 	</PropertyGroup>
 
 	<!--
+		By default, we produce reference assemblies in their own `ref` folder under `BuildDir`.
+		But we also want to preserve the previous way of producing a reference assembly in the `OutputPath` too!
+	-->
+	<PropertyGroup Condition="'$(ProduceReferenceAssembly)' == 'true'">
+		<ProduceReferenceAssemblyInOutputPath Condition="'$(ProduceReferenceAssemblyInOutputPath)' == ''">false</ProduceReferenceAssemblyInOutputPath>
+	</PropertyGroup>
+
+	<!-- Introduce `BaseReferenceOutputPath` and `ReferenceOutputPath` as the goto destination for reference assemblies -->
+	<PropertyGroup Condition="'$(ProduceReferenceAssembly)' == 'true' AND '$(ProduceReferenceAssemblyInOutputPath)' == 'false'">
+		<BaseReferenceOutputPath Condition="'$(BaseReferenceOutputPath)' == ''">$(BuildDir)ref\</BaseReferenceOutputPath>
+		<BaseReferenceOutputPath Condition="!HasTrailingSlash('$(BaseReferenceOutputPath)')">$(BaseReferenceOutputPath)\</BaseReferenceOutputPath>
+		<ReferenceOutputPath Condition="'$(ReferenceOutputPath)' == '' AND '$(Platform)' == 'AnyCPU'">$(BaseReferenceOutputPath)$(Configuration)\</ReferenceOutputPath>
+		<ReferenceOutputPath Condition="'$(ReferenceOutputPath)' == '' AND '$(Platform)' != 'AnyCPU'">$(BaseReferenceOutputPath)$(Platform)\$(Configuration)\</ReferenceOutputPath>
+		<ReferenceOutputPath Condition="!HasTrailingSlash('$(ReferenceOutputPath)')">$(ReferenceOutputPath)\</ReferenceOutputPath>
+	</PropertyGroup>
+
+	<!--
 		For Legacy projects that define properties per Configuration/Platform combination, the validity of an
 		invalid combination is determined by the non-empty value of the 'OutputPath' property specified under
 		the IDE generated Configuration/Platform specific 'PropertyGroup' section.
@@ -237,8 +254,13 @@
 		<TargetDir Condition="'$(OutDir)' != ''">$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(OutDir)'))</TargetDir>
 		<!-- Example, C:\MyProjects\MyProject\bin\Debug\MyAssembly.dll -->
 		<TargetPath Condition="'$(TargetPath)' == ''">$(TargetDir)$(TargetFileName)</TargetPath>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(TargetRefPath)' == '' AND '$(ProduceReferenceAssembly)' == 'true'">
 		<!-- Example, C:\MyProjects\MyProject\bin\Debug\ref\MyAssembly.dll -->
-		<TargetRefPath Condition="'$(TargetRefPath)' == '' AND '$(ProduceReferenceAssembly)' == 'true'">$([MSBuild]::NormalizePath('$(TargetDir)', 'ref', '$(TargetFileName)'))</TargetRefPath>
+		<TargetRefPath Condition="'$(ProduceReferenceAssemblyInOutputPath)' != 'false'">$([MSBuild]::NormalizePath('$(TargetDir)', 'ref', '$(TargetFileName)'))</TargetRefPath>
+		<!-- Example, C:\MyProjects\MyProject\ref\Debug\MyAssembly.dll -->
+		<TargetRefPath Condition="'$(ProduceReferenceAssemblyInOutputPath)' == 'false'">$([MSBuild]::NormalizePath('$(ReferenceOutputPath)', '$(TargetFileName)'))</TargetRefPath>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -359,7 +381,8 @@
 	<ItemGroup Condition="'$(ProduceReferenceAssembly)' == 'true'">
 		<IntermediateRefAssembly Include="$(IntermediateOutputPath)ref\$(TargetName)$(TargetExt)" Condition="@(IntermediateRefAssembly->Count()) == 0"/>
 		<CreateDirectory Include="@(IntermediateRefAssembly->'%(RootDir)%(Directory)')"/>
-		<CreateDirectory Include="$(OutDir)ref"/>
+		<CreateDirectory Include="$(OutDir)ref" Condition="'$(ProduceReferenceAssemblyInOutputPath)' != 'false'"/>
+		<CreateDirectory Include="$(ReferenceOutputPath)" Condition="'$(ProduceReferenceAssemblyInOutputPath)' == 'false'"/>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(_DebugSymbolsProduced)' == 'true'">

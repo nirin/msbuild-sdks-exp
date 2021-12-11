@@ -45,9 +45,9 @@
 	<Import Project="$(DirectoryPackagesProps)" Condition="Exists('$(DirectoryPackagesProps)')"/>
 
 	<PropertyGroup Condition="Exists('$(DirectoryPackagesProps)')">
-		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 		<CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
-		<RestoreEnableGlobalPackageReference>true</RestoreEnableGlobalPackageReference>
+		<ManagePackageVersionsCentrally Condition="'$(ManagePackageVersionsCentrally)' == ''">true</ManagePackageVersionsCentrally>
+		<RestoreEnableGlobalPackageReference Condition="'$(RestoreEnableGlobalPackageReference)' == ''">true</RestoreEnableGlobalPackageReference>
 	</PropertyGroup>
 
 </Project>

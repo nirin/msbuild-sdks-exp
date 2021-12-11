@@ -9,6 +9,8 @@
 
 	<!-- NuGet's Common Tasks -->
 	<UsingTask AssemblyFile="$(NuGetRestoreTasksAssemblyFile)" TaskName="NuGet.Build.Tasks.NuGetMessageTask"/>
+	<UsingTask AssemblyFile="$(NuGetRestoreTasksAssemblyFile)" TaskName="NuGet.Build.Tasks.GetGlobalPropertyValueTask"/>
+	<UsingTask AssemblyFile="$(NuGetRestoreTasksAssemblyFile)" TaskName="NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask"/>
 	<UsingTask AssemblyFile="$(NuGetRestoreTasksAssemblyFile)" TaskName="NuGet.Build.Tasks.WarnForInvalidProjectsTask"/>
 	<UsingTask AssemblyFile="$(NuGetRestoreTasksAssemblyFile)" TaskName="NuGet.Build.Tasks.GetCentralPackageVersionsTask"/>
 	<UsingTask AssemblyFile="$(NuGetRestoreTasksAssemblyFile)" TaskName="NuGet.Build.Tasks.GetProjectTargetFrameworksTask"/>

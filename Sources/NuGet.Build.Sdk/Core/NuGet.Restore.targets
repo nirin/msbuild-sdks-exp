@@ -174,33 +174,111 @@
 					CollectPackageReferences
 
 		Gathers all PackageReference items from the project.
-		This target may be used as an extension point to modify
-		package references before NuGet reads them.
+		This target may be used as a pivot point for 'BeforeTargets'
+		extension point (do not use 'AfterTargets') to modify
+		package downloads before NuGet reads them.
 	============================================================
 	-->
-	<Target Name="CollectPackageReferences" Returns="@(PackageReference)"/>
+	<Target Name="CollectPackageReferences" Returns="@(PackageReference)">
+
+		<!-- Design-Time builds should not produce a build error. So, we need to ensure that we continue on error -->
+		<PropertyGroup>
+			<CollectPackageReferencesContinueOnError>$([MSBuild]::ValueOrDefault($(ContinueOnError), 'false'))</CollectPackageReferencesContinueOnError>
+			<DisableCheckingDuplicatePackageReferences>$([MSBuild]::ValueOrDefault($(DisableCheckingDuplicateNuGetItems), $(DisableCheckingDuplicatePackageReferences)))</DisableCheckingDuplicatePackageReferences>
+		</PropertyGroup>
+
+		<CheckForDuplicateNuGetItemsTask
+			LogCode="NU1504"
+			NoWarn="$(NoWarn)"
+			Items="@(PackageReference)"
+			ItemName="PackageReference"
+			WarningsAsErrors="$(WarningsAsErrors)"
+			TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
+			MSBuildProjectFullPath="$(MSBuildProjectFullPath)"
+			ContinueOnError="$(CollectPackageReferencesContinueOnError)"
+			Condition="'$(DisableCheckingDuplicatePackageReferences)' != 'true'">
+			<Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedPackageReference"/>
+		</CheckForDuplicateNuGetItemsTask>
+
+		<ItemGroup Condition="'@(DeduplicatedPackageReference)' != ''">
+			<PackageReference Remove="@(PackageReference)"/>
+			<PackageReference Include="@(DeduplicatedPackageReference)"/>
+		</ItemGroup>
+	</Target>
 
 	<!--
 	============================================================
 					CollectCentralPackageVersions
 
 		Gathers all PackageVersion items from the central package versions file.
-		This target may be used as an extension point to modify
-		package versions before NuGet reads them.
+		This target may be used as a pivot point for 'BeforeTargets'
+		extension point (do not use 'AfterTargets') to modify
+		package downloads before NuGet reads them.
 	============================================================
 	-->
-	<Target Name="CollectCentralPackageVersions" Returns="@(PackageVersion)"/>
+	<Target Name="CollectCentralPackageVersions" Returns="@(PackageVersion)">
+
+		<!-- Design-Time builds should not produce a build error. So, we need to ensure that we continue on error -->
+		<PropertyGroup>
+			<CollectCentralPackageVersionsContinueOnError>$([MSBuild]::ValueOrDefault($(ContinueOnError), 'false'))</CollectCentralPackageVersionsContinueOnError>
+			<DisableCheckingDuplicatePackageVersions>$([MSBuild]::ValueOrDefault($(DisableCheckingDuplicateNuGetItems), $(DisableCheckingDuplicatePackageVersions)))</DisableCheckingDuplicatePackageVersions>
+		</PropertyGroup>
+
+		<CheckForDuplicateNuGetItemsTask
+			LogCode="NU1505"
+			NoWarn="$(NoWarn)"
+			Items="@(PackageVersion)"
+			ItemName="PackageVersion"
+			WarningsAsErrors="$(WarningsAsErrors)"
+			TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
+			MSBuildProjectFullPath="$(MSBuildProjectFullPath)"
+			ContinueOnError="$(CollectCentralPackageVersionsContinueOnError)"
+			Condition="'$(DisableCheckingDuplicatePackageVersions)' != 'true'">
+			<Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedPackageVersion"/>
+		</CheckForDuplicateNuGetItemsTask>
+
+		<ItemGroup Condition="'@(DeduplicatedPackageVersion)' != ''">
+			<PackageVersion Remove="@(PackageVersion)"/>
+			<PackageVersion Include="@(DeduplicatedPackageVersion)"/>
+		</ItemGroup>
+	</Target>
 
 	<!--
 	============================================================
 					CollectPackageDownloads
 
 		Gathers all PackageDownload items from the project.
-		This target may be used as an extension point to modify
+		This target may be used as a pivot point for 'BeforeTargets'
+		extension point (do not use 'AfterTargets') to modify
 		package downloads before NuGet reads them.
 	============================================================
 	-->
-	<Target Name="CollectPackageDownloads" Returns="@(PackageDownload)"/>
+	<Target Name="CollectPackageDownloads" Returns="@(PackageDownload)">
+
+		<!-- Design-Time builds should not produce a build error. So, we need to ensure that we continue on error -->
+		<PropertyGroup>
+			<CollectPackageDownloadsContinueOnError>$([MSBuild]::ValueOrDefault($(ContinueOnError), 'false'))</CollectPackageDownloadsContinueOnError>
+			<DisableCheckingDuplicatePackageDownloads>$([MSBuild]::ValueOrDefault($(DisableCheckingDuplicateNuGetItems), $(DisableCheckingDuplicatePackageDownloads)))</DisableCheckingDuplicatePackageDownloads>
+		</PropertyGroup>
+
+		<CheckForDuplicateNuGetItemsTask
+			LogCode="NU1505"
+			NoWarn="$(NoWarn)"
+			Items="@(PackageDownload)"
+			ItemName="PackageDownload"
+			WarningsAsErrors="$(WarningsAsErrors)"
+			TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
+			MSBuildProjectFullPath="$(MSBuildProjectFullPath)"
+			ContinueOnError="$(CollectPackageDownloadsContinueOnError)"
+			Condition="'$(DisableCheckingDuplicatePackageDownloads)' != 'true'">
+			<Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedPackageDownload"/>
+		</CheckForDuplicateNuGetItemsTask>
+
+		<ItemGroup Condition="'@(DeduplicatedPackageDownload)' != ''">
+			<PackageDownload Remove="@(PackageDownload)"/>
+			<PackageDownload Include="@(DeduplicatedPackageDownload)"/>
+		</ItemGroup>
+	</Target>
 
 	<!--
 	============================================================
@@ -519,18 +597,20 @@
 	============================================================
 	-->
 	<Target Name="_GetRestoreTargetFrameworksOutput"
-			DependsOnTargets="_GetRestoreProjectStyle"
+			DependsOnTargets="_GetRestoreProjectStyle;_CheckIfGlobalTargetFramework"
 			Returns="@(_RestoreTargetFrameworksOutputFiltered)">
 
 		<PropertyGroup>
 			<_RestoreProjectFrameworks/>
+			<_PreferredTargetFrameworks Condition="'$(_IsGlobalTargetFramework)' == 'true'">$(TargetFramework)</_PreferredTargetFrameworks>
+			<_PreferredTargetFrameworks Condition="'$(_IsGlobalTargetFramework)' != 'true'">$(TargetFrameworks)</_PreferredTargetFrameworks>
 		</PropertyGroup>
 
 		<!-- For project.json projects target frameworks will be read from project.json -->
 		<GetProjectTargetFrameworksTask
 			Condition="'$(RestoreProjectStyle)' != 'ProjectJson'"
 			ProjectPath="$(MSBuildProjectFullPath)"
-			TargetFrameworks="$(TargetFrameworks)"
+			TargetFrameworks="$(_PreferredTargetFrameworks)"
 			TargetFramework="$(TargetFramework)"
 			TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
 			TargetPlatformIdentifier="$(TargetPlatformIdentifier)"
@@ -552,13 +632,16 @@
 
 		Read $(TargetFrameworks) from the project as items.
 		Projects that do not have $(TargetFrameworks) will noop.
+		If $(TargetFramework) is specified globally, it'll be preferred over $(TargetFrameworks)
 	============================================================
 	-->
 	<Target Name="_GetRestoreTargetFrameworksAsItems"
-			DependsOnTargets="_GetRestoreProjectStyle"
+			DependsOnTargets="_GetRestoreProjectStyle;_CheckIfGlobalTargetFramework"
 			Returns="@(_RestoreTargetFrameworkItems)">
 		<ItemGroup Condition="'$(TargetFrameworks)' != ''">
-			<_RestoreTargetFrameworkItems Include="$(TargetFrameworks)"/>
+			<_RestoreTargetFrameworkItems Include="$(TargetFrameworks)" Condition="'$(_IsGlobalTargetFramework)' != 'true'"/>
+			<!-- Use $(TargetFramework) instead of $(TargetFrameworks) when it is specified globally (i.e., on the command-line) -->
+			<_RestoreTargetFrameworkItems Include="$(TargetFramework)" Condition="'$(_IsGlobalTargetFramework)' == 'true'"/>
 		</ItemGroup>
 	</Target>
 
@@ -575,7 +658,7 @@
 		<PropertyGroup Condition="'$(RestoreProjectStyle)' == 'PackagesConfig'">
 			<RestoreSolutionDirectory Condition="'$(RestoreSolutionDirectory)' == '' AND '$(SolutionDir)' != '*Undefined*'">$(SolutionDir)</RestoreSolutionDirectory>
 		</PropertyGroup>
-		<!-- For transitive project styles, we rely on evaluating all the settings and including them in the dg spec to faciliate no-op restore-->
+		<!-- For transitive project styles, we rely on evaluating all the settings and including them in the dg spec to facilitate no-op restore-->
 		<GetRestoreSettingsTask
 			ProjectUniqueName="$(MSBuildProjectFullPath)"
 			RestoreSources="$(RestoreSources)"
@@ -1295,6 +1378,27 @@
 			Returns="$(_RestoreFallbackFoldersOverride)">
 		<PropertyGroup>
 			<_RestoreFallbackFoldersOverride>$(RestoreFallbackFolders)</_RestoreFallbackFoldersOverride>
+		</PropertyGroup>
+	</Target>
+
+	<!--
+	============================================================
+				_CheckIfGlobalTargetFramework
+	============================================================
+	-->
+	<Target Name="_CheckIfGlobalTargetFramework"
+			Condition="'$(_DisableNuGetRestoreTargetFrameworksOverride)' != 'true'"
+			Returns="$(_IsGlobalTargetFramework)">
+
+		<!-- Check if $(TargetFramework) is a global property (i.e., specified on the command-line) -->
+		<GetGlobalPropertyValueTask
+			PropertyName="TargetFramework"
+			Condition="'$(TargetFramework)' != ''">
+			<Output TaskParameter="GlobalPropertyValue" PropertyName="_GlobalTargetFramework"/>
+		</GetGlobalPropertyValueTask>
+
+		<PropertyGroup Condition="'$(_GlobalTargetFramework)' != ''">
+			<_IsGlobalTargetFramework Condition="'$(_GlobalTargetFramework)' == '$(TargetFramework)'">true</_IsGlobalTargetFramework>
 		</PropertyGroup>
 	</Target>
 
