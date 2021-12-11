@@ -2,12 +2,12 @@
 
 	<PropertyGroup>
 		<ImportProjectExtensionTargets Condition="'$(ImportProjectExtensionTargets)' == ''">true</ImportProjectExtensionTargets>
-		<ImportDirectoryBuildTargets Condition="'$(ImportDirectoryBuildTargets)' == ''">true</ImportDirectoryBuildTargets>
+		<ImportProjectBuildTargets Condition="'$(ImportProjectBuildTargets)' == ''">true</ImportProjectBuildTargets>
 	</PropertyGroup>
 
 	<ImportGroup>
 		<Import Project="..\Extensions\MSBuild.ProjectExtension.targets" Condition="'$(ImportProjectExtensionTargets)' == 'true'"/>
-		<Import Project="..\Extensions\Directory.Build.targets" Condition="'$(ImportDirectoryBuildTargets)' == 'true'"/>
+		<Import Project="..\Extensions\Project.Build.targets" Condition="'$(ImportProjectBuildTargets)' == 'true'"/>
 	</ImportGroup>
 
 </Project>

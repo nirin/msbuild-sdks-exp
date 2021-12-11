@@ -1,12 +1,12 @@
 <Project>
 
 	<PropertyGroup>
-		<ImportDirectoryBuildProps Condition="'$(ImportDirectoryBuildProps)' == ''">true</ImportDirectoryBuildProps>
+		<ImportProjectBuildProps Condition="'$(ImportProjectBuildProps)' == ''">true</ImportProjectBuildProps>
 		<ImportProjectExtensionProps Condition="'$(ImportProjectExtensionProps)' == ''">true</ImportProjectExtensionProps>
 	</PropertyGroup>
 
 	<ImportGroup>
-		<Import Project="..\Extensions\Directory.Build.props" Condition="'$(ImportDirectoryBuildProps)' == 'true'"/>
+		<Import Project="..\Extensions\Project.Build.props" Condition="'$(ImportProjectBuildProps)' == 'true'"/>
 		<Import Project="..\Extensions\MSBuild.ProjectExtension.props" Condition="'$(ImportProjectExtensionProps)' == 'true'"/>
 	</ImportGroup>
 
