@@ -12,7 +12,7 @@
 		<Summary>An MSBuild SDK package for projects that provides basic project support.</Summary>
 		<Description>$(Summary) This is usually the base SDK for other SDKs listed here.</Description>
 		<Description>$(Description) On its own, it can be used for authoring SDKs, build files and project files that don't compile to an assembly.</Description>
-		<Description>$(Description) But, when extended, it can provide common build functionality (such as project metadata, output paths, etc…) to the derived SDKs.</Description>
+		<Description>$(Description) But, when extended, it can provide common build functionality (such as project meta-data, output paths, etc…) to the derived SDKs.</Description>
 	</PropertyGroup>
 
 </Project>

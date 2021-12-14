@@ -8,7 +8,7 @@
 	<!--
 		Right now, MSBuild doesn't have solution specific properties.
 		Hence, the new *Solution* properties are based on Macros available
-		when running from Visual Studio IDE with a legacy solution `sln` file.
+		when running from Visual Studio IDE with a legacy solution file.
 	-->
 	<PropertyGroup Condition="'$(BuildingSolutionFile)' == 'true'">
 		<MSBuildSolutionFile>$(SolutionFileName)</MSBuildSolutionFile>

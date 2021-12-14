@@ -6,7 +6,7 @@
 	-->
 	<PropertyGroup Label="Build">
 		<BuildDirName Condition="'$(BuildDirName)' == ''">build</BuildDirName>
-		<BuildDir Condition="'$(BuildPath)' == ''">$(BuildDirName)</BuildDir>
+		<BuildDir Condition="'$(BuildDir)' == ''">$(BuildDirName)</BuildDir>
 	</PropertyGroup>
 
 	<PropertyGroup Label="Build" Condition="$([System.IO.Path]::IsPathRooted('$(BuildDir)'))">

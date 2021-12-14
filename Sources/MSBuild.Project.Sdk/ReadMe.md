@@ -2,7 +2,7 @@
 
 ## Summary
 
-Support projects that do not compile to an assembly.
+Supports creating projects that do not compile to an assembly.
 This is usually the base SDK for other SDKs in this repository.
 
 ### Package Name: `MSBuild.Project.Sdk`

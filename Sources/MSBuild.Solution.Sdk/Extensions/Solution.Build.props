@@ -1,7 +1,7 @@
 <Project>
 
 	<!--
-		Determine the path to the `Solution.Build.props` file if the user did not disable `$(ImportSolutionBuildProps)` and
+		Determine the path to the `Solution.Build.props` file, if the user did not disable `$(ImportSolutionBuildProps)` and
 		they did not already specify an absolute path to use via `$(SolutionBuildProps)`
 	-->
 	<PropertyGroup Condition="'$(SolutionBuildProps)' == ''">
