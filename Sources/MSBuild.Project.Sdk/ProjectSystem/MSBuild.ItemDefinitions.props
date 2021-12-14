@@ -3,27 +3,27 @@
 	<!-- Basic Reference types -->
 	<ItemDefinitionGroup>
 		<ProjectReference>
-			<Scope>Solution</Scope>
+			<Scope>Project</Scope>
 			<Platform Condition="'$(Platform)' != ''">$(Platform)</Platform>
 			<Configuration Condition="'$(Configuration)' != ''">$(Configuration)</Configuration>
 			<AdditionalProperties Condition="'$(AdditionalProperties)' != ''">$(AdditionalProperties)</AdditionalProperties>
 		</ProjectReference>
 		<PackageReference>
-			<Scope>Solution</Scope>
+			<Scope>Project</Scope>
 			<Platform Condition="'$(Platform)' != ''">$(Platform)</Platform>
 		</PackageReference>
 	</ItemDefinitionGroup>
 
 	<!-- Generic Item types -->
 	<ItemDefinitionGroup>
-		<ProjectItem>
-			<ItemType>File</ItemType>
-			<FileType>XML</FileType>
-		</ProjectItem>
-		<SolutionItem>
+		<Content>
 			<ItemType>File</ItemType>
 			<FileType>Text</FileType>
-		</SolutionItem>
+		</Content>
+		<Resource>
+			<ItemType>File</ItemType>
+			<FileType>XML</FileType>
+		</Resource>
 	</ItemDefinitionGroup>
 
 </Project>

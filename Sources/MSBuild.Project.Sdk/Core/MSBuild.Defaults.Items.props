@@ -1,5 +1,7 @@
 <Project>
 
+	<Import Project="..\ProjectSystem\MSBuild.ItemDefinitions.props"/>
+
 	<ItemGroup Condition="'$(EnableDefaultItems)' == 'true' AND '$(EnableDefaultContentItems)' == 'true'">
 		<Content Include="Content\**\*" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
 	</ItemGroup>
