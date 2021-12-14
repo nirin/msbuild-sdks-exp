@@ -1,11 +1,11 @@
 using System;
 
-namespace MSBuild.Core.Tests;
+namespace MSBuild.Project.Tests;
 
 public static class Program
 {
 	public static void Main(string[] args)
 	{
-		Console.WriteLine("MSBuild Core SDK Tests");
+		Console.WriteLine("MSBuild Project SDK Tests");
 	}
 }

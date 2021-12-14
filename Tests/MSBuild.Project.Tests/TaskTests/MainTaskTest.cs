@@ -2,7 +2,7 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MSBuild.TestFramework;
 
-namespace MSBuild.Core.Tasks.Tests;
+namespace MSBuild.Project.Tasks.Tests;
 
 [TestClass]
 public class MainTaskTest : TaskTest

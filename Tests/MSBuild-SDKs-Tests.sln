@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0
 MinimumVisualStudioVersion = 15.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MSBuild.Core.Tests", "MSBuild.Core.Tests\MSBuild.Core.Tests.csproj", "{64D12982-9EB5-4946-ADF0-633DA2FE2A96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MSBuild.Project.Tests", "MSBuild.Project.Tests\MSBuild.Project.Tests.csproj", "{64D12982-9EB5-4946-ADF0-633DA2FE2A96}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MSBuild.NET.Tests", "MSBuild.NET.Tests\MSBuild.NET.Tests.csproj", "{7370E23C-38E8-4C06-B4C4-FF1067A6D215}"
 EndProject
