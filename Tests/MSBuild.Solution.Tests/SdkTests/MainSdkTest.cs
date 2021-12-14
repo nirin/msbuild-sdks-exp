@@ -2,7 +2,7 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MSBuild.TestFramework;
 
-namespace MSBuild.NET.Sdk.Tests;
+namespace MSBuild.Solution.Sdk.Tests;
 
 [TestClass]
 public class MainSdkTest : SdkTest

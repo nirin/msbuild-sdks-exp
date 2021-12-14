@@ -28,7 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A6D598DD
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MSBuild.Project.Tests", "Tests\MSBuild.Project.Tests\MSBuild.Project.Tests.csproj", "{64D12982-9EB5-4946-ADF0-633DA2FE2A96}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MSBuild.NET.Tests", "Tests\MSBuild.NET.Tests\MSBuild.NET.Tests.csproj", "{7370E23C-38E8-4C06-B4C4-FF1067A6D215}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MSBuild.Solution.Tests", "Tests\MSBuild.Solution.Tests\MSBuild.Solution.Tests.csproj", "{7370E23C-38E8-4C06-B4C4-FF1067A6D215}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MSBuild.TestFramework", "Tests\MSBuild.TestFramework\MSBuild.TestFramework.csproj", "{9D3A6804-CB5F-48FE-A75A-9F6C359DBDC7}"
 EndProject
