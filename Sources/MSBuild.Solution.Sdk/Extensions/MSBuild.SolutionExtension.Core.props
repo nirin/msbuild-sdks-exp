@@ -10,7 +10,8 @@
 		management system can write out multiple files but the order of the import is alphabetic because MSBuild sorts the list.
 	-->
 	<PropertyGroup>
-		<MSBuildSolutionExtensionsPath Condition="'$(MSBuildSolutionExtensionsPath)' == ''">$(BuildPath)</MSBuildSolutionExtensionsPath>
+		<SolutionExtensionsFolder Condition="'$(SolutionExtensionsFolder)' == ''">annex</SolutionExtensionsFolder>
+		<MSBuildSolutionExtensionsPath Condition="'$(MSBuildSolutionExtensionsPath)' == ''">$([System.IO.Path]::Join('$(BuildPath)', '$(SolutionExtensionsFolder)'))</MSBuildSolutionExtensionsPath>
 		<!--
 			Import paths that are relative default to be relative to the importing file. However, since `$(MSBuildSolutionExtensionsPath)`
 			defaults to `$(BuildPath)` we expect it to be relative to the `$(BuildPath)` directory. So if the path is relative

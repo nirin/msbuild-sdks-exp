@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<SolutionName Condition="'$(SolutionName)' == ''">$(MSBuildSolutionName)</SolutionName>
+		<RootFileName Condition="'$(RootFileName)' == ''">$(SolutionName)</RootFileName>
 		<RootNamespace Condition="'$(RootNamespace)' == ''">$(SolutionName)</RootNamespace>
 	</PropertyGroup>
 
