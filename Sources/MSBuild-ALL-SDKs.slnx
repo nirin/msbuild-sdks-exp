@@ -1,0 +1,37 @@
+<Solution>
+
+	<Configurations>
+		<Platform Name="Any" />
+	</Configurations>
+
+	<Folder Name="/Bare SDKs/">
+		<Project Path="MSBuild.Core.Sdk/MSBuild.Core.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+		<Project Path="MSBuild.Common.Sdk/MSBuild.Common.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+	</Folder>
+
+	<Folder Name="/Basic SDKs/">
+		<Project Path="MSBuild.Project.Sdk/MSBuild.Project.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+		<Project Path="MSBuild.Sharing.Sdk/MSBuild.Sharing.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+		<Project Path="MSBuild.Solution.Sdk/MSBuild.Solution.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+	</Folder>
+
+	<Folder Name="/Platform SDKs/">
+		<Project Path="MSBuild.Native.Sdk/MSBuild.Native.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+		<Project Path="MSBuild.Managed.Sdk/MSBuild.Managed.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+	</Folder>
+
+	<Folder Name="/Support SDKs/">
+		<Project Path="MSBuild.Packaging.Sdk/MSBuild.Packaging.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+		<Project Path="MSBuild.Dependencies.Sdk/MSBuild.Dependencies.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+	</Folder>
+
+</Solution>

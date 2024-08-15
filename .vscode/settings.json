@@ -1,0 +1,8 @@
+{
+    "xml.fileAssociations": [
+        {
+            "pattern": "**/*.slnx",
+            "systemId": "Sources/MSBuild.Solution.Sdk/Sdk/Solution.Legacy.xsd"
+        }
+    ]
+}

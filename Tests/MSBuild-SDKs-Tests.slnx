@@ -1,0 +1,16 @@
+<Solution>
+
+	<Configurations>
+		<Platform Name="Any" />
+	</Configurations>
+
+	<Folder Name="/SDK Tests/">
+		<Project Path="MSBuild.Project.Tests/MSBuild.Project.Tests.csproj" />
+		<Project Path="MSBuild.Solution.Tests/MSBuild.Solution.Tests.csproj" />
+	</Folder>
+
+	<Folder Name="/Test Framework/">
+		<Project Path="MSBuild.TestFramework/MSBuild.TestFramework.csproj" />
+	</Folder>
+
+</Solution>

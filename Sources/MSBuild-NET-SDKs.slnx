@@ -1,0 +1,27 @@
+<Solution>
+
+	<Configurations>
+		<Platform Name="Any" />
+	</Configurations>
+
+	<Folder Name="/.NET SDKs/">
+		<Project Path="MSBuild.NET.Sdk/MSBuild.NET.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+		<Project Path="MSBuild.NET.Inbox.Sdk/MSBuild.NET.Inbox.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+		<Project Path="MSBuild.NET.Legacy.Sdk/MSBuild.NET.Legacy.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+		<Project Path="MSBuild.NET.Extras.Sdk/MSBuild.NET.Extras.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+		<Project Path="MSBuild.NET.DefaultItems/MSBuild.NET.DefaultItems.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+	</Folder>
+
+	<Folder Name="/NuGet SDKs/">
+		<Project Path="NuGet.Build.Sdk/NuGet.Build.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+		<Project Path="NuGet.Packaging.Sdk/NuGet.Packaging.Sdk.nuproj"
+			Type="{5DD5E4FA-CB73-4610-85AB-557B54E96AA9}" />
+	</Folder>
+
+</Solution>
