@@ -1,5 +1,13 @@
 <Project>
 
+	<!-- Define multi-targeting for static graph, so it can identify inner and outer build graph nodes -->
+	<PropertyGroup Condition="'$(IsGraphBuild)' == 'true'">
+		<InnerBuildProperty>TargetFramework</InnerBuildProperty>
+		<OuterBuildProperty>TargetFrameworks</OuterBuildProperty>
+		<!-- TODO: Remove when no longer needed! -->
+		<InnerBuildPropertyValues>$(OuterBuildProperty)</InnerBuildPropertyValues>
+	</PropertyGroup>
+
 	<!--
 		We are doing a multi-targeting build if there is no list of target frameworks specified
 		nor is there a current target framework being built individually.
@@ -7,14 +15,6 @@
 	-->
 	<PropertyGroup Condition="'$(TargetFrameworks)' != '' AND '$(TargetFramework)' == ''">
 		<IsOuterBuild>true</IsOuterBuild>
-	</PropertyGroup>
-
-	<!-- Define multi-targeting for static graph, so it can identify inner and outer build graph nodes -->
-	<PropertyGroup Condition="'$(IsGraphBuild)' == 'true'">
-		<InnerBuildProperty>TargetFramework</InnerBuildProperty>
-		<OuterBuildProperty>TargetFrameworks</OuterBuildProperty>
-		<!-- TODO: Remove when no longer needed! -->
-		<InnerBuildPropertyValues>$(OuterBuildProperty)</InnerBuildPropertyValues>
 	</PropertyGroup>
 
 </Project>

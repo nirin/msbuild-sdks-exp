@@ -46,7 +46,7 @@
 			Resources1.resx => RootNamespace.Resources1 => Build into main assembly
 			SubFolder\Resources1.resx => RootNamespace.SubFolder.Resources1 => Build into main assembly
 			Resources1.fr.resx => RootNamespace.Resources1.fr => Build into satellite assembly
-			Resources1.notaculture.resx => RootNamespace.Resources1.notaculture => Build into main assembly
+			Resources1.NoCulture.resx => RootNamespace.Resources1.NoCulture => Build into main assembly
 
 		For other project systems, this transformation may be different.
 	-->
@@ -68,6 +68,7 @@
 		<CreateCSharpManifestResourceName
 			ResourceFiles="@(EmbeddedResource)"
 			RootNamespace="$(RootNamespace)"
+			EnableCustomCulture="$(EnableCustomCulture)"
 			UseDependentUponConvention="$(EmbeddedResourceUseDependentUponConvention)"
 			Condition="'%(EmbeddedResource.ManifestResourceName)' == '' AND ('%(EmbeddedResource.WithCulture)' == 'false' OR '%(EmbeddedResource.Type)' == 'Resx')">
 
@@ -218,21 +219,31 @@
 			ApplicationConfiguration="$(AppConfigForCompiler)"
 			BaseAddress="$(BaseAddress)"
 			CheckForOverflowUnderflow="$(CheckForOverflowUnderflow)"
+			ChecksumAlgorithm="$(ChecksumAlgorithm)"
 			CodeAnalysisRuleSet="$(ResolvedCodeAnalysisRuleSet)"
 			CodePage="$(CodePage)"
-			DebugType="$(DebugType)"
+			CompilerType="$(RoslynCompilerType)"
+			DebugType="None"
 			DefineConstants="$(DefineConstants)"
 			DelaySign="$(DelaySign)"
 			DisabledWarnings="$(NoWarn)"
+			DisableSdkPath="$(DisableSdkPath)"
 			DocumentationFile="@(DocFileItem)"
+			EmbedAllSources="false"
+			EmbeddedFiles="@(EmbeddedFiles)"
 			EmitDebugInformation="$(DebugSymbols)"
 			EnvironmentVariables="$(CscEnvironment)"
 			ErrorEndLocation="$(ErrorEndLocation)"
 			ErrorLog="$(ErrorLog)"
 			ErrorReport="$(ErrorReport)"
+			Features="$(Features)"
+			InterceptorsNamespaces="$(InterceptorsNamespaces)"
+			InterceptorsPreviewNamespaces="$(InterceptorsPreviewNamespaces)"
 			FileAlignment="$(FileAlignment)"
+			GeneratedFilesOutputPath="$(CompilerGeneratedFilesOutputPath)"
 			GenerateFullPaths="$(GenerateFullPaths)"
 			HighEntropyVA="$(HighEntropyVA)"
+			Instrument="$(Instrument)"
 			KeyContainer="$(KeyContainerName)"
 			KeyFile="$(KeyOriginatorFile)"
 			LangVersion="$(LangVersion)"
@@ -245,19 +256,30 @@
 			NoWin32Manifest="$(NoWin32Manifest)"
 			Nullable="$(Nullable)"
 			Optimize="$(Optimize)"
+			Deterministic="$(Deterministic)"
+			PublicSign="$(PublicSign)"
 			OutputAssembly="@(XamlIntermediateAssembly)"
-			PdbFile="$(PdbFile)"
+			OutputRefAssembly=""
+			PdbFile=""
 			Platform="$(PlatformTarget)"
 			Prefer32Bit="$(Prefer32Bit)"
 			PreferredUILang="$(PreferredUILang)"
+			ProjectName="$(MSBuildProjectName)"
+			ProvideCommandLineArgs="$(ProvideCommandLineArgs)"
 			References="@(ReferencePath)"
+			RefOnly="false"
 			ReportAnalyzer="$(ReportAnalyzer)"
+			ReportIVTs="$(ReportIVTs)"
 			Resources="@(_CoreCompileResourceInputs);@(CompiledLicenseFile)"
 			ResponseFiles="$(CompilerResponseFile)"
+			RuntimeMetadataVersion="$(RuntimeMetadataVersion)"
+			SharedCompilationId="$(SharedCompilationId)"
 			SkipAnalyzers="true"
+			SkipCompilerExecution="$(SkipCompilerExecution)"
 			Sources="@(Compile)"
 			SubsystemVersion="$(SubsystemVersion)"
 			TargetType="$(OutputType)"
+			TargetFramework="$(TargetFramework)"
 			ToolExe="$(CscToolExe)"
 			ToolPath="$(CscToolPath)"
 			TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
@@ -270,7 +292,9 @@
 			WarningsNotAsErrors="$(WarningsNotAsErrors)"
 			Win32Icon="$(ApplicationIcon)"
 			Win32Manifest="$(Win32Manifest)"
-			Win32Resource="$(Win32Resource)"/>
+			Win32Resource="$(Win32Resource)"
+			PathMap="$(PathMap)"
+			SourceLink="$(SourceLink)"/>
 
 		<!-- Only Applicable to the regular CoreCompile: -->
 		<!--
@@ -289,8 +313,10 @@
 
 	<Import Project="$(CSharpCoreTargetsPath)"/>
 
-	<!-- Import design time targets for Roslyn Project System. These are only available if Visual Studio is installed. -->
-	<!-- Import design time targets before 'Microsoft.Common.targets', which import targets from NuGet packages. -->
+	<!--
+		Import design time targets for Roslyn Project System. These are only available if Visual Studio is installed.
+		Import design time targets before 'Microsoft.Common.CurrentVersion.targets', which import targets from NuGet packages.
+	-->
 	<PropertyGroup>
 		<CSharpDesignTimeTargetsPath Condition="'$(CSharpDesignTimeTargetsPath)'==''">$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.CSharp.DesignTime.targets</CSharpDesignTimeTargetsPath>
 	</PropertyGroup>
@@ -346,6 +372,12 @@ using System.Runtime.Versioning;
 		-->
 		<_ExplicitReference Include="$(FrameworkPathOverride)\mscorlib.dll"/>
 	</ItemGroup>
+
+	<PropertyGroup Condition="$([MSBuild]::IsRunningFromVisualStudio())">
+		<ManagedDesignTimeTargets Condition="'$(ManagedDesignTimeTargets)' == ''">$([MSBuild]::GetVsInstallRoot())\Common7\IDE\CommonExtensions\Microsoft\ProjectServices\Microsoft.DesignTime.targets</ManagedDesignTimeTargets>
+	</PropertyGroup>
+
+	<Import Project="$(ManagedDesignTimeTargets)" Condition="Exists('$(ManagedDesignTimeTargets)')"/>
 
 	<Import Project="$(CustomAfterMicrosoftCSharpTargets)" Condition="Exists('$(CustomAfterMicrosoftCSharpTargets)')"/>
 

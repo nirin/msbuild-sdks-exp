@@ -46,7 +46,7 @@
 			Resources1.resx => RootNamespace.Resources1 => Build into main assembly
 			SubFolder\Resources1.resx => RootNamespace.Resources1 => Build into main assembly
 			Resources1.fr.resx => RootNamespace.Resources1.fr => Build into satellite assembly
-			Resources1.notaculture.resx => RootNamespace.Resources1.notaculture => Build into main assembly
+			Resources1.NoCulture.resx => RootNamespace.Resources1.NoCulture => Build into main assembly
 
 		For other project systems, this transformation may be different.
 	-->
@@ -79,6 +79,7 @@
 			ResourceFiles="@(EmbeddedResource)"
 			RootNamespace="$(RootNamespace)"
 			PrependCultureAsDirectory="false"
+			EnableCustomCulture="$(EnableCustomCulture)"
 			UseDependentUponConvention="$(EmbeddedResourceUseDependentUponConvention)"
 			Condition="'%(EmbeddedResource.ManifestResourceName)' == '' AND '%(EmbeddedResource.WithCulture)' == 'true' AND '%(EmbeddedResource.Type)' == 'Non-Resx'">
 
@@ -205,21 +206,29 @@
 			AnalyzerConfigFiles="@(EditorConfigFiles)"
 			Analyzers="@(Analyzer)"
 			BaseAddress="$(BaseAddress)"
+			ChecksumAlgorithm="$(ChecksumAlgorithm)"
 			CodeAnalysisRuleSet="$(ResolvedCodeAnalysisRuleSet)"
 			CodePage="$(CodePage)"
-			DebugType="$(DebugType)"
+			CompilerType="$(RoslynCompilerType)"
+			DebugType="None"
 			DefineConstants="$(FinalDefineConstants)"
 			DelaySign="$(DelaySign)"
+			DisableSdkPath="$(DisableSdkPath)"
 			DisabledWarnings="$(NoWarn)"
 			DocumentationFile="@(DocFileItem)"
+			EmbedAllSources="false"
+			EmbeddedFiles="@(EmbeddedFiles)"
 			EmitDebugInformation="$(DebugSymbols)"
 			EnvironmentVariables="$(VbcEnvironment)"
 			ErrorLog="$(ErrorLog)"
 			ErrorReport="$(ErrorReport)"
+			Features="$(Features)"
 			FileAlignment="$(FileAlignment)"
 			GenerateDocumentation="$(GenerateDocumentation)"
+			GeneratedFilesOutputPath="$(CompilerGeneratedFilesOutputPath)"
 			HighEntropyVA="$(HighEntropyVA)"
 			Imports="@(Import)"
+			Instrument="$(Instrument)"
 			KeyContainer="$(KeyContainerName)"
 			KeyFile="$(KeyOriginatorFile)"
 			LangVersion="$(LangVersion)"
@@ -232,28 +241,39 @@
 			NoWarnings="$(_NoWarnings)"
 			NoWin32Manifest="$(NoWin32Manifest)"
 			Optimize="$(Optimize)"
+			Deterministic="$(Deterministic)"
+			PublicSign="$(PublicSign)"
 			OptionCompare="$(OptionCompare)"
 			OptionExplicit="$(OptionExplicit)"
 			OptionInfer="$(OptionInfer)"
 			OptionStrict="$(OptionStrict)"
 			OptionStrictType="$(OptionStrictType)"
 			OutputAssembly="@(XamlIntermediateAssembly)"
+			OutputRefAssembly=""
+			PdbFile=""
 			Platform="$(PlatformTarget)"
 			Prefer32Bit="$(Prefer32Bit)"
 			PreferredUILang="$(PreferredUILang)"
+			ProjectName="$(MSBuildProjectName)"
+			ProvideCommandLineArgs="$(ProvideCommandLineArgs)"
 			References="@(ReferencePath)"
+			RefOnly="false"
 			RemoveIntegerChecks="$(RemoveIntegerChecks)"
 			ReportAnalyzer="$(ReportAnalyzer)"
+			ReportIVTs="$(ReportIVTs)"
 			Resources="@(_CoreCompileResourceInputs);@(CompiledLicenseFile)"
 			ResponseFiles="$(CompilerResponseFile)"
 			RootNamespace="$(RootNamespace)"
-			PdbFile="$(PdbFile)"
+			RuntimeMetadataVersion="$(RuntimeMetadataVersion)"
 			SdkPath="$(FrameworkPathOverride)"
-			SkipAnalyzers="true"
+			SharedCompilationId="$(SharedCompilationId)"
+			SkipAnalyzers="$(_SkipAnalyzers)"
+			SkipCompilerExecution="$(SkipCompilerExecution)"
 			Sources="@(Compile)"
 			SubsystemVersion="$(SubsystemVersion)"
 			TargetCompactFramework="$(TargetCompactFramework)"
 			TargetType="$(OutputType)"
+			TargetFramework="$(TargetFramework)"
 			ToolExe="$(VbcToolExe)"
 			ToolPath="$(VbcToolPath)"
 			TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
@@ -268,7 +288,9 @@
 			Win32Icon="$(ApplicationIcon)"
 			Win32Manifest="$(Win32Manifest)"
 			Win32Resource="$(Win32Resource)"
-			VBRuntime="$(VBRuntime)"/>
+			VBRuntime="$(VBRuntime)"
+			PathMap="$(PathMap)"
+			SourceLink="$(SourceLink)"/>
 
 		<!-- Only Applicable to the regular CoreCompile: -->
 		<!--
@@ -287,8 +309,10 @@
 
 	<Import Project="$(VisualBasicCoreTargetsPath)"/>
 
-	<!-- Import design time targets for Roslyn Project System. These are only available if Visual Studio is installed. -->
-	<!-- Import design time targets before 'Microsoft.Common.targets', which import targets from NuGet packages. -->
+	<!--
+		Import design time targets for Roslyn Project System. These are only available if Visual Studio is installed.
+		Import design time targets before 'Microsoft.Common.CurrentVersion.targets', which import targets from NuGet packages.
+	-->
 	<PropertyGroup>
 		<VisualBasicDesignTimeTargetsPath Condition="'$(VisualBasicDesignTimeTargetsPath)'==''">$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.VisualBasic.DesignTime.targets</VisualBasicDesignTimeTargetsPath>
 	</PropertyGroup>

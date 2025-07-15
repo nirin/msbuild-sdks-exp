@@ -10,12 +10,12 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<!-- By default we want to replace subsets with profiles, but we do need a way to turning off this "upgrade" in case a user needs to target a subset-->
+		<!-- By default we want to replace subsets with profiles, but we do need a way to turning off this "upgrade" in case a user needs to target a subset -->
 		<UpgradeSubsetToProfile Condition="'$(UpgradeSubsetToProfile)' == ''">true</UpgradeSubsetToProfile>
 
 		<TargetFrameworkProfile Condition="'$(UpgradeSubsetToProfile)' == 'true' AND '$(TargetFrameworkSubset)' != '' AND '$(TargetFrameworkProfile)' == ''">$(TargetFrameworkSubset)</TargetFrameworkProfile>
 
-		<!-- If we are not upgrading the Subset to a profile this means we want to target a subset, do not wipe out the subset name-->
+		<!-- If we are not upgrading the Subset to a profile this means we want to target a subset, do not wipe out the subset name -->
 		<TargetFrameworkSubset Condition="'$(UpgradeTargetFrameworkSubsetToProfile)' == 'true'"/>
 	</PropertyGroup>
 
@@ -60,7 +60,7 @@
 		============================================================
 								GetToolPaths
 		Get the paths for the .NET Framework tools and sdk tools directories.
-		This does not need to be a target since all of the values are availiable at project evaluation time.
+		This does not need to be a target since all of the values are available at project evaluation time.
 		============================================================
 	-->
 	<PropertyGroup>
@@ -80,7 +80,7 @@
 		<TargetedRuntimeVersion Condition="'$(TargetedRuntimeVersion)' == ''">v$(MSBuildRuntimeVersion)</TargetedRuntimeVersion>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetingClr2Framework)' != 'true' AND '$(TargetFrameworkVersion)' != 'v4.0' AND ('$(OutputType)' == 'exe' OR '$(OutputType)' == 'winexe' OR '$(OutputType)' == 'appcontainerexe' OR '$(OutputType)' == '')">
+	<PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetingClr2Framework)' != 'true' AND '$(TargetFrameworkVersion)' != 'v4.0' AND ('$(OutputType)' == 'exe' OR '$(OutputType)' == 'winexe' OR '$(OutputType)' == 'appcontainerexe' OR '$(OutputType)' == '') AND '$(PreferNativeArm64)' != 'true'">
 		<Prefer32Bit Condition="'$(Prefer32Bit)' == ''">true</Prefer32Bit>
 	</PropertyGroup>
 
@@ -114,8 +114,12 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<!-- Starting with .NET 4.5 projects we implictly reference all portable design-time facades -->
+		<!-- Starting with .NET 4.5 projects we implicitly reference all portable design-time facades -->
 		<ImplicitlyExpandDesignTimeFacades Condition="'$(ImplicitlyExpandDesignTimeFacades)' == '' AND ('$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetingClr2Framework)' != 'true' AND '$(TargetFrameworkVersion)' != 'v4.0')">true</ImplicitlyExpandDesignTimeFacades>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<AvailablePlatforms Condition="!$(AvailablePlatforms.Contains('ARM64')) AND '$(TargetFrameworkIdentifier)' == '.NETFramework' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.0'))">$(AvailablePlatforms),ARM64</AvailablePlatforms>
 	</PropertyGroup>
 
 	<Import Project="$(CustomAfterMicrosoftNETFrameworkProps)" Condition="Exists('$(CustomAfterMicrosoftNETFrameworkProps)')"/>

@@ -1,5 +1,11 @@
 <Project>
 
+	<!-- Define multi-targeting for static graph, so it can identify inner and outer build graph nodes -->
+	<PropertyGroup Condition="'$(IsGraphBuild)' == 'true'">
+		<InnerBuildProperty>TargetProfile</InnerBuildProperty>
+		<OuterBuildProperty>TargetProfiles</OuterBuildProperty>
+	</PropertyGroup>
+
 	<!--
 		We are doing a multi-targeting build if there is no list of target profiles specified
 		nor is there a current target profile being built individually.
@@ -7,12 +13,6 @@
 	-->
 	<PropertyGroup Condition="'$(TargetProfiles)' != '' AND '$(TargetProfile)' == ''">
 		<IsOuterBuild>true</IsOuterBuild>
-	</PropertyGroup>
-
-	<!-- Define multi-targeting for static graph, so it can identify inner and outer build graph nodes -->
-	<PropertyGroup Condition="'$(IsGraphBuild)' == 'true'">
-		<InnerBuildProperty>TargetProfile</InnerBuildProperty>
-		<OuterBuildProperty>TargetProfiles</OuterBuildProperty>
 	</PropertyGroup>
 
 </Project>

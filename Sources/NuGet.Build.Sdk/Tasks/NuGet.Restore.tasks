@@ -27,7 +27,7 @@
 	<UsingTask AssemblyFile="$(NuGetRestoreTasksAssemblyFile)" TaskName="NuGet.Build.Tasks.GetRestoreProjectReferencesTask"/>
 	<UsingTask AssemblyFile="$(NuGetRestoreTasksAssemblyFile)" TaskName="NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask"/>
 
-	<!-- Obselete Restore specific Tasks -->
+	<!-- Obsolete Restore specific Tasks -->
 	<UsingTask AssemblyFile="$(NuGetRestoreTasksAssemblyFile)" TaskName="NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask"/>
 	<UsingTask AssemblyFile="$(NuGetRestoreTasksAssemblyFile)" TaskName="NuGet.Build.Tasks.GetRestoreProjectJsonPathTask"/>
 

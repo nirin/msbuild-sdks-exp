@@ -10,6 +10,9 @@
 			DependsOnTargets="GetTargetFrameworksWithPlatformFromInnerBuilds"
 			Returns="@(_ThisProjectBuildMetadata)">
 
+		<SdkError Condition="'$(IsOuterBuild)' == 'true'"
+			Resource="CommonSdk.GetTargetFrameworksMultiTargetingUsage"/>
+
 		<CombineXmlElements
 			RootElementName="AdditionalProjectProperties"
 			XmlElements="@(_TargetFrameworkInfo->'%(AdditionalPropertiesFromProject)')">
@@ -24,12 +27,11 @@
 				<TargetPlatformMonikers>@(_TargetFrameworkInfo->'%(TargetPlatformMonikers)')</TargetPlatformMonikers>
 				<AdditionalPropertiesFromProject>$(_AdditionalPropertiesFromProject)</AdditionalPropertiesFromProject>
 				<HasSingleTargetFramework>false</HasSingleTargetFramework>
-				<!-- indicate to caller that project is RID agnostic so that a global property RuntimeIdentifier value can be removed -->
-				<IsRidAgnostic>false</IsRidAgnostic>
-				<IsRidAgnostic Condition="'$(RuntimeIdentifier)' == '' AND '$(RuntimeIdentifiers)' == ''">true</IsRidAgnostic>
+				<IsRidAgnostic>@(_TargetFrameworkInfo->'%(IsRidAgnostic)')</IsRidAgnostic>
 				<!-- Extract necessary information for SetPlatform negotiation -->
 				<!-- This target does not run for cpp projects. -->
 				<IsVcxOrNativeProj>false</IsVcxOrNativeProj>
+				<Platform>$(Platform)</Platform>
 				<Platforms>$(Platforms)</Platforms>
 			</_ThisProjectBuildMetadata>
 		</ItemGroup>
@@ -96,7 +98,7 @@
 
 	$(InnerTargets) - The targets to build for each target framework.
 		Defaults to 'Build' if unset, but allows override to support
-		`msbuild /p:InnerTargets=X;Y;Z` which will build X, Y & Z
+		`msbuild /p:InnerTargets=X;Y;Z` which will execute X, Y & Z
 		targets for each target framework.
 
 	[OUT]
@@ -108,6 +110,32 @@
 	<Target Name="_SetBuildInnerTarget" Returns="@(InnerOutput)">
 		<PropertyGroup Condition="'$(InnerTargets)' == ''">
 			<InnerTargets>Build</InnerTargets>
+		</PropertyGroup>
+	</Target>
+
+	<!--
+	============================================================
+								Test
+
+	Multi-targeting version of Test.
+
+	[IN]
+	$(TargetFrameworks) - Semicolon delimited list of target frameworks.
+
+	$(InnerTargets) - The targets to test for each target framework.
+		Defaults to 'Test' if unset, but allows override to support
+		`msbuild /p:InnerTargets=X;Y;Z` which will execute X, Y & Z
+		targets for each target framework.
+
+	[OUT]
+	@(InnerOutput) - The combined output items of the inner targets across all builds.
+	============================================================
+	-->
+	<Target Name="Test" DependsOnTargets="_SetTestInnerTarget;DispatchToInnerBuilds"/>
+
+	<Target Name="_SetTestInnerTarget" Returns="@(InnerOutput)">
+		<PropertyGroup Condition="'$(InnerTargets)' == ''">
+			<InnerTargets>Test</InnerTargets>
 		</PropertyGroup>
 	</Target>
 
@@ -151,7 +179,7 @@
 
 	$(InnerTargets) - The targets to publish for each target framework.
 		Defaults to 'Publish' if unset, but allows override to support
-		`msbuild /p:InnerTargets=X;Y;Z` which will build X, Y & Z
+		`msbuild /p:InnerTargets=X;Y;Z` which will execute X, Y & Z
 		targets for each target framework.
 
 	[OUT]

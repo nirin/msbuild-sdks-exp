@@ -10,7 +10,7 @@
 		============================================================
 								GetToolPaths
 		Get the paths for the .NET Framework and .NET Core tools and sdk tools directories.
-		This does not need to be a target since all of the values are availiable at project evaluation time.
+		This does not need to be a target since all of the values are available at project evaluation time.
 		============================================================
 	-->
 	<PropertyGroup>

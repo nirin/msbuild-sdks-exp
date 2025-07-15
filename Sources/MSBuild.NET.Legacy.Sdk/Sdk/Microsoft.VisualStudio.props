@@ -1,5 +1,10 @@
 <Project>
 
+	<PropertyGroup>
+		<BuildingInsideVisualStudio Condition="'$(BuildingInsideVisualStudio)' == ''">$([MSBuild]::IsRunningFromVisualStudio())</BuildingInsideVisualStudio>
+		<UseVisualStudioTelemetry Condition="'$(UseVisualStudioTelemetry)' == ''">$(BuildingInsideVisualStudio)</UseVisualStudioTelemetry>
+	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(VisualStudioVersion)' == '' AND !Exists('$(VSToolsPath)')">
 		<MinVisualStudioVersion>15.0</MinVisualStudioVersion>
 		<BaseVSToolsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio</BaseVSToolsPath>
@@ -9,11 +14,6 @@
 		<VisualStudioVersion Condition="Exists('$(BaseVSToolsPath)\v17.0')">17.0</VisualStudioVersion>
 
 		<VSToolsPath Condition="'$(VisualStudioVersion)' != '' AND Exists('$(BaseVSToolsPath)')">$(BaseVSToolsPath)\v$(VisualStudioVersion)</VSToolsPath>
-	</PropertyGroup>
-
-	<PropertyGroup>
-		<BuildingInsideVisualStudio Condition="'$(BuildingInsideVisualStudio)' == ''">$([MSBuild]::IsRunningFromVisualStudio())</BuildingInsideVisualStudio>
-		<UseVisualStudioTelemetry Condition="'$(UseVisualStudioTelemetry)' == ''">$(BuildingInsideVisualStudio)</UseVisualStudioTelemetry>
 	</PropertyGroup>
 
 </Project>

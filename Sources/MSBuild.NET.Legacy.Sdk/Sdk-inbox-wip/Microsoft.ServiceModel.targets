@@ -9,7 +9,7 @@
 	<UsingTask AssemblyFile="$(XsdBuildTaskAssemblyFile)" Condition="'$(ResolveTasksFromAssemblyName)' != 'true'" TaskName="Microsoft.Build.Tasks.Xsd.XsdTypeImporterTask"/>
 	<UsingTask AssemblyName="$(XsdBuildTaskAssemblyName)" Condition="'$(ResolveTasksFromAssemblyName)' == 'true'" TaskName="Microsoft.Build.Tasks.Xsd.XsdTypeImporterTask"/>
 
-	<!-- sub build target, preceeding XsdCodeGen -->
+	<!-- sub build target, preceding XsdCodeGen -->
 	<Target
 		Name="PreXsdCodeGen"
 		BeforeTargets="CoreCompile">
