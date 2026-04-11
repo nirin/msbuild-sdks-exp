@@ -33,6 +33,21 @@
 	========================================================================================================================
 	-->
 
+	<!-- Graph Build with ProjectReference -->
+	<ItemGroup>
+		<ProjectReferenceTargets Include="Initialize" Targets="Initialize"/>
+		<ProjectReferenceTargets Include="Summary" Targets="Summary"/>
+	</ItemGroup>
+
+	<!-- Targets for the Project Context -->
+
+	<PropertyGroup>
+		<!-- Initialize -->
+		<InitializeDependsOn>ResolveReferences</InitializeDependsOn>
+		<!-- Summary -->
+		<SummaryDependsOn>ResolveReferences</SummaryDependsOn>
+	</PropertyGroup>
+
 	<!-- Initial Target for the Project Context -->
 
 	<Target Name="Initialize" DependsOnTargets="$(InitializeDependsOn)">

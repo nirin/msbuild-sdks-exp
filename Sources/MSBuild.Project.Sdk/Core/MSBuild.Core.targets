@@ -6,4 +6,193 @@
 
 	<Import Project="MSBuild.OutputPaths.targets"/>
 
+	<!--
+	========================================================================================================================
+														TARGETS
+	========================================================================================================================
+	-->
+
+	<!-- Graph Build with ProjectReference -->
+	<ItemGroup>
+		<ProjectReferenceTargets Include="Restore" Targets="Restore"/>
+		<ProjectReferenceTargets Include="Build" Targets="Build"/>
+		<ProjectReferenceTargets Include="Clean" Targets="Clean"/>
+		<ProjectReferenceTargets Include="Rebuild" Targets="Rebuild"/>
+		<ProjectReferenceTargets Include="Test" Targets="Test"/>
+		<ProjectReferenceTargets Include="Pack" Targets="Pack"/>
+		<ProjectReferenceTargets Include="Publish" Targets="Publish"/>
+	</ItemGroup>
+
+	<!-- Common Targets for the Project Context -->
+
+	<PropertyGroup>
+		<!-- CollectReferences -->
+		<CollectReferencesDependsOn>CollectProjectReferences;CollectPackageReferences</CollectReferencesDependsOn>
+		<!-- PrepareReferences -->
+		<PrepareReferencesDependsOn>PrepareProjectReferences;PreparePackageReferences</PrepareReferencesDependsOn>
+		<!-- ResolveReferences -->
+		<ResolveReferencesDependsOn>ResolveProjectReferences;ResolvePackageReferences</ResolveReferencesDependsOn>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- Restore -->
+		<RestoreDependsOn>RestoreCheck;ResolveReferences</RestoreDependsOn>
+		<!-- Build -->
+		<BuildDependsOn>BuildCheck;BuildOnlySettings;ResolveReferences</BuildDependsOn>
+		<!-- Clean -->
+		<CleanDependsOn>BuildCheck;CleanBuildFolder;PublishCheck;CleanPublishFolder;PrepareReferences</CleanDependsOn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(NoBuild)' != 'true'">
+		<!-- Test -->
+		<TestDependsOn>BuildCheck;Build</TestDependsOn>
+		<!-- Pack -->
+		<PackDependsOn>BuildCheck;Build</PackDependsOn>
+		<!-- Publish -->
+		<PublishDependsOn>BuildCheck;Build</PublishDependsOn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(NoBuild)' == 'true'">
+		<!-- Test -->
+		<TestDependsOn>ResolveReferences</TestDependsOn>
+		<!-- Pack -->
+		<PackDependsOn>ResolveReferences</PackDependsOn>
+		<!-- Publish -->
+		<PublishDependsOn>ResolveReferences</PublishDependsOn>
+	</PropertyGroup>
+
+	<!-- Targets for PackageReference protocol -->
+
+	<Target Name="CollectPackageReferences" Returns="@(PackageReference)"/>
+
+	<Target Name="PreparePackageReferences">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'PreparePackageReferences' operation."/>
+	</Target>
+
+	<Target Name="ResolvePackageReferences" Returns="@(_ResolvedPackage)">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'ResolvePackageReferences' operation."/>
+	</Target>
+
+	<!-- Targets for ProjectReference protocol -->
+
+	<Target Name="CollectProjectReferences" Returns="@(ProjectReference)"/>
+
+	<Target Name="PrepareProjectReferences">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'PrepareProjectReferences' operation."/>
+	</Target>
+
+	<Target Name="ResolveProjectReferences" Returns="@(_ResolvedProject)">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'ResolveProjectReferences' operation."/>
+	</Target>
+
+	<Target Name="CollectReferences" DependsOnTargets="$(CollectReferencesDependsOn)" Returns="@(ProjectReference);@(PackageReference)"/>
+
+	<Target Name="PrepareReferences" DependsOnTargets="$(PrepareReferencesDependsOn)">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'PrepareReferences' operation."/>
+	</Target>
+
+	<Target Name="ResolveReferences" DependsOnTargets="$(ResolveReferencesDependsOn)" Returns="@(_ResolvedProject);@(_ResolvedPackage)">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'ResolveReferences' operation."/>
+	</Target>
+
+	<Target Name="RestoreCheck">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'RestoreCheck' operation."/>
+	</Target>
+
+	<Target Name="Restore" DependsOnTargets="$(RestoreDependsOn)">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'Restore' operation."/>
+	</Target>
+
+	<PropertyGroup>
+		<BuildingProject>false</BuildingProject>
+		<BuildingSolution>false</BuildingSolution>
+		<BuildingSolutionFile>false</BuildingSolutionFile>
+	</PropertyGroup>
+
+	<Target Name="BuildOnlySettings">
+		<PropertyGroup>
+			<BuildingProject>true</BuildingProject>
+			<BuildingSolution>true</BuildingSolution>
+			<BuildingSolutionFile>true</BuildingSolutionFile>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="BuildCheck">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'BuildCheck' operation."/>
+	</Target>
+
+	<Target Name="Build" DependsOnTargets="$(BuildDependsOn)" Returns="@(CollectedBuildOutput)">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'Build' operation."/>
+	</Target>
+
+	<Target Name="CleanBuildFolder">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'CleanBuildFolder' operation."/>
+	</Target>
+
+	<Target Name="CleanPublishFolder">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'CleanPublishFolder' operation."/>
+	</Target>
+
+	<Target Name="Clean" DependsOnTargets="$(CleanDependsOn)">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'Clean' operation."/>
+	</Target>
+
+	<Target Name="Rebuild" DependsOnTargets="$(RebuildDependsOn)" Returns="@(CollectedBuildOutput)">
+		<Message Importance="High" Text="Rebuilding the project..."/>
+	</Target>
+
+	<Target Name="MSTest" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'MSTest' operation."/>
+	</Target>
+
+	<Target Name="VSTest" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'VSTest' operation."/>
+	</Target>
+
+	<Target Name="Test" DependsOnTargets="$(TestDependsOn)">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'Test' operation."/>
+	</Target>
+
+	<Target Name="Pack" DependsOnTargets="$(PackDependsOn)">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'Pack' operation."/>
+	</Target>
+
+	<Target Name="PublishCheck">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'PublishCheck' operation."/>
+	</Target>
+
+	<Target Name="Publish" DependsOnTargets="$(PublishDependsOn)">
+		<Warning Code="PROJ0000" File="[MSBuild.Project.Sdk]" Text="The Project does not implement 'Publish' operation."/>
+	</Target>
+
+	<!-- Targets for the Solution Context -->
+
+	<Target Name="GetProjectMetadata" Returns="@(_ProjectMetadata)">
+
+		<!-- Resolve the current project directory. Make it relative if it is relative to the solution directory. -->
+		<PropertyGroup>
+			<_ProjectInSolution Condition="'$(MSBuildSolutionDirectory)' != ''">$(MSBuildProjectDirectory.StartsWith('$(MSBuildSolutionDirectory)'))</_ProjectInSolution>
+			<_ProjectDirectory Condition="'$(MSBuildSolutionDirectory)' != '' AND '$(_ProjectInSolution)' == 'true'">$([MSBuild]::MakeRelative('$(MSBuildSolutionDirectory)', '$(MSBuildProjectDirectory)'))</_ProjectDirectory>
+			<_ProjectDirectory Condition="'$(_ProjectDirectory)' == ''">$(MSBuildProjectDirectory)</_ProjectDirectory>
+		</PropertyGroup>
+
+		<!-- Populate `_ProjectMetadata` with the current project information -->
+		<ItemGroup>
+			<_ProjectMetadata Include="$(MSBuildProjectName)">
+				<ProjectType>$(MSBuildProjectType)</ProjectType>
+				<ProjectDirectory>$(_ProjectDirectory)</ProjectDirectory>
+				<ProjectInSolution>$(_ProjectInSolution)</ProjectInSolution>
+				<UsingMSBuildSdk>$(UsingMSBuildSdk)</UsingMSBuildSdk>
+				<Configurations>$(Configurations)</Configurations>
+				<Platforms>$(Platforms)</Platforms>
+			</_ProjectMetadata>
+		</ItemGroup>
+
+		<!-- Clean-up temporary properties -->
+		<PropertyGroup>
+			<_ProjectDirectory/>
+			<_ProjectInSolution/>
+		</PropertyGroup>
+	</Target>
+
 </Project>
