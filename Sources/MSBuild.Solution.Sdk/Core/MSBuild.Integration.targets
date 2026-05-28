@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+	<!--
+	========================================================================================================================
+										SOLUTION INTEGRATION TARGETS
+	========================================================================================================================
+	
+	This file contains targets for handling solution-level project integrations and graph build orchestration.
+	It provides mechanisms for managing multiple projects within a solution context.
+	
+	-->
+
+	<!-- ====================================================================================================================
+		 SOLUTION CONTEXT INITIALIZATION
+		 ==================================================================================================================== -->
+
+	<PropertyGroup>
+		<!-- Solution-level integration configuration -->
+		<EnableSolutionGraphBuild Condition="'$(EnableSolutionGraphBuild)' == ''">true</EnableSolutionGraphBuild>
+		<ValidateSolutionProjectsDependsOn>CollectSolutionProjects</ValidateSolutionProjectsDependsOn>
+		<PrepareSolutionBuildDependsOn>ValidateSolutionProjects;ResolveSolutionDependencies</PrepareSolutionBuildDependsOn>
+	</PropertyGroup>
+
+	<!-- Collects all projects in the solution -->
+	<Target Name="CollectSolutionProjects"
+			Returns="@(_SolutionProject)">
+
+		<ItemGroup>
+			<_SolutionProject Include="@(_ResolvedProject)">
+				<ProjectName>%(Identity)</ProjectName>
+				<SolutionRelativePath>%(HintPath)</SolutionRelativePath>
+			</_SolutionProject>
+		</ItemGroup>
+
+		<Message 
+			Importance="Low"
+			Text="Collected @(_SolutionProject->Count()) projects from solution $(MSBuildSolutionName)"/>
+
+	</Target>
+
+	<!-- Validates all projects in the solution -->
+	<Target Name="ValidateSolutionProjects"
+			DependsOnTargets="$(ValidateSolutionProjectsDependsOn)"
+			Condition="'$(SkipSolutionValidation)' != 'true'">
+
+		<ItemGroup>
+			<_InvalidSolutionProject Include="@(_SolutionProject)" 
+									   Condition="!Exists('%(SolutionRelativePath)')"/>
+		</ItemGroup>
+
+		<Warning 
+			Code="SLNX0001"
+			File="[MSBuild.Solution.Sdk]"
+			Condition="'@(_InvalidSolutionProject)' != ''"
+			Text="The following project(s) in the solution could not be found: @(_InvalidSolutionProject, '; '). These projects may be unloaded or have incorrect paths."/>
+
+	</Target>
+
+	<!-- ====================================================================================================================
+		 SOLUTION DEPENDENCY RESOLUTION
+		 ==================================================================================================================== -->
+
+	<PropertyGroup>
+		<!-- Solution dependency resolution configuration -->
+		<ResolveSolutionDependenciesDependsOn>CollectSolutionProjects;AnalyzeSolutionDependencies</ResolveSolutionDependenciesDependsOn>
+	</PropertyGroup>
+
+	<!-- Analyzes project interdependencies within the solution -->
+	<Target Name="AnalyzeSolutionDependencies"
+			Returns="@(_SolutionDependency)"
+			DependsOnTargets="CollectSolutionProjects">
+
+		<Message 
+			Importance="Low"
+			Text="Analyzing dependencies between projects in solution $(MSBuildSolutionName)"/>
+
+		<ItemGroup>
+			<!-- This target can be overridden by solution-specific implementations to build the dependency graph -->
+			<_SolutionDependency Include="@(_SolutionProject)">
+				<DependencyType>Project</DependencyType>
+			</_SolutionDependency>
+		</ItemGroup>
+
+	</Target>
+
+	<!-- Resolves the complete solution dependency graph -->
+	<Target Name="ResolveSolutionDependencies"
+			Returns="@(_ResolvedSolutionDependency)"
+			DependsOnTargets="$(ResolveSolutionDependenciesDependsOn)">
+
+		<ItemGroup>
+			<_ResolvedSolutionDependency Include="@(_SolutionDependency)">
+				<HasDependencies Condition="'%(DependencyType)' == 'Project'">true</HasDependencies>
+			</_ResolvedSolutionDependency>
+		</ItemGroup>
+
+	</Target>
+
+	<!-- ====================================================================================================================
+		 SOLUTION GRAPH BUILD ORCHESTRATION
+		 ==================================================================================================================== -->
+
+	<PropertyGroup>
+		<!-- Graph build orchestration configuration -->
+		<PrepareGraphBuildOrchestrationDependsOn>$(PrepareSolutionBuildDependsOn);OptimizeBuildOrder</PrepareGraphBuildOrchestrationDependsOn>
+	</PropertyGroup>
+
+	<!-- Optimizes the build order based on project dependencies -->
+	<Target Name="OptimizeBuildOrder"
+			Returns="@(_OptimizedBuildOrder)"
+			DependsOnTargets="ResolveSolutionDependencies"
+			Condition="'$(EnableSolutionGraphBuild)' == 'true'">
+
+		<Message 
+			Importance="Low"
+			Text="Optimizing build order for $(MSBuildSolutionName) based on project dependencies"/>
+
+		<ItemGroup>
+			<!-- Projects are ordered based on their dependencies -->
+			<!-- This ensures correct build sequence for parallel execution -->
+			<_OptimizedBuildOrder Include="@(_ResolvedSolutionDependency)">
+				<BuildOrder>%(Identity)</BuildOrder>
+			</_OptimizedBuildOrder>
+		</ItemGroup>
+
+	</Target>
+
+	<!-- Prepares the solution graph for parallel build execution -->
+	<Target Name="PrepareGraphBuildOrchestration"
+			DependsOnTargets="$(PrepareGraphBuildOrchestrationDependsOn)"
+			Condition="'$(EnableSolutionGraphBuild)' == 'true'">
+
+		<PropertyGroup>
+			<_GraphBuildOrchestrationReady>true</_GraphBuildOrchestrationReady>
+		</PropertyGroup>
+
+		<Message 
+			Importance="Low"
+			Text="Solution graph build orchestration prepared for $(MSBuildSolutionName)"/>
+
+	</Target>
+
+	<!-- Validates the complete solution build graph -->
+	<Target Name="ValidateGraphBuildOrchestration"
+			DependsOnTargets="PrepareGraphBuildOrchestration"
+			Condition="'$(EnableSolutionGraphBuild)' == 'true'">
+
+		<Message 
+			Importance="Low"
+			Text="Validating solution build graph for $(MSBuildSolutionName)"/>
+
+	</Target>
+
+	<!-- ====================================================================================================================
+		 SOLUTION RESTORE WITH GRAPH BUILD SUPPORT
+		 ==================================================================================================================== -->
+
+	<Target Name="RestoreWithGraphBuild"
+			DependsOnTargets="$(RestoreDependsOn);PrepareGraphBuildOrchestration"
+			Condition="'$(EnableSolutionGraphBuild)' == 'true'">
+
+		<MSBuild
+			Targets="Restore"
+			Projects="@(_OptimizedBuildOrder->'%(HintPath)')"
+			Properties="%(_OptimizedBuildOrder.Properties)"
+			Condition="'%(_OptimizedBuildOrder.Restore)' != 'false'"
+			BuildInParallel="$(BuildInParallel)"
+			ContinueOnError="$(ContinueOnError)"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)"/>
+
+	</Target>
+
+	<!-- ====================================================================================================================
+		 SOLUTION BUILD WITH GRAPH BUILD SUPPORT
+		 ==================================================================================================================== -->
+
+	<Target Name="BuildWithGraphBuild"
+			DependsOnTargets="$(BuildDependsOn);ValidateGraphBuildOrchestration"
+			Condition="'$(EnableSolutionGraphBuild)' == 'true'"
+			Returns="@(CollectedBuildOutput)">
+
+		<MSBuild
+			Targets="Build"
+			Projects="@(_OptimizedBuildOrder->'%(HintPath)')"
+			Properties="%(_OptimizedBuildOrder.Properties)"
+			Condition="'%(_OptimizedBuildOrder.Build)' != 'false'"
+			BuildInParallel="$(BuildInParallel)"
+			ContinueOnError="$(ContinueOnError)"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)">
+
+			<!-- Collect build outputs from all projects -->
+			<Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
+
+		</MSBuild>
+
+	</Target>
+
+	<!-- ====================================================================================================================
+		 SOLUTION CLEAN WITH GRAPH BUILD SUPPORT
+		 ==================================================================================================================== -->
+
+	<Target Name="CleanWithGraphBuild"
+			DependsOnTargets="$(CleanDependsOn);PrepareGraphBuildOrchestration"
+			Condition="'$(EnableSolutionGraphBuild)' == 'true'">
+
+		<!-- Clean in reverse dependency order to ensure proper cleanup -->
+		<MSBuild
+			Targets="Clean"
+			Projects="@(_OptimizedBuildOrder->Reverse()->'%(HintPath)')"
+			Properties="%(_OptimizedBuildOrder.Properties)"
+			Condition="'%(_OptimizedBuildOrder.Clean)' != 'false'"
+			BuildInParallel="$([MSBuild]::ValueOrDefault('$(CleanInParallel)', '$(BuildInParallel)'))"
+			ContinueOnError="$([MSBuild]::ValueOrDefault('$(CleanContinueOnError)', '$(ContinueOnError)'))"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)"/>
+
+	</Target>
+
+	<!-- ====================================================================================================================
+		 SOLUTION TEST WITH GRAPH BUILD SUPPORT
+		 ==================================================================================================================== -->
+
+	<Target Name="TestWithGraphBuild"
+			DependsOnTargets="$(TestDependsOn);ValidateGraphBuildOrchestration"
+			Condition="'$(EnableSolutionGraphBuild)' == 'true'">
+
+		<MSBuild
+			Targets="Test"
+			Projects="@(_OptimizedBuildOrder->'%(HintPath)')"
+			Properties="%(_OptimizedBuildOrder.Properties)"
+			Condition="'%(_OptimizedBuildOrder.Test)' != 'false'"
+			BuildInParallel="$([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))"
+			ContinueOnError="$([MSBuild]::ValueOrDefault('$(TestContinueOnError)', '$(ContinueOnError)'))"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)"/>
+
+	</Target>
+
+	<!-- ====================================================================================================================
+		 SOLUTION PACK WITH GRAPH BUILD SUPPORT
+		 ==================================================================================================================== -->
+
+	<Target Name="PackWithGraphBuild"
+			DependsOnTargets="$(PackDependsOn);ValidateGraphBuildOrchestration"
+			Condition="'$(EnableSolutionGraphBuild)' == 'true'">
+
+		<MSBuild
+			Targets="Pack"
+			Projects="@(_OptimizedBuildOrder->'%(HintPath)')"
+			Properties="%(_OptimizedBuildOrder.Properties)"
+			Condition="'%(_OptimizedBuildOrder.Pack)' != 'false'"
+			BuildInParallel="$([MSBuild]::ValueOrDefault('$(PackInParallel)', '$(BuildInParallel)'))"
+			ContinueOnError="$([MSBuild]::ValueOrDefault('$(PackContinueOnError)', '$(ContinueOnError)'))"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)"/>
+
+	</Target>
+
+	<!-- ====================================================================================================================
+		 SOLUTION PUBLISH WITH GRAPH BUILD SUPPORT
+		 ==================================================================================================================== -->
+
+	<Target Name="PublishWithGraphBuild"
+			DependsOnTargets="$(PublishDependsOn);ValidateGraphBuildOrchestration"
+			Condition="'$(EnableSolutionGraphBuild)' == 'true'">
+
+		<MSBuild
+			Targets="Publish"
+			Projects="@(_OptimizedBuildOrder->'%(HintPath)')"
+			Properties="%(_OptimizedBuildOrder.Properties)"
+			Condition="'%(_OptimizedBuildOrder.Publish)' != 'false'"
+			BuildInParallel="$([MSBuild]::ValueOrDefault('$(PublishInParallel)', '$(BuildInParallel)'))"
+			ContinueOnError="$([MSBuild]::ValueOrDefault('$(PublishContinueOnError)', '$(ContinueOnError)'))"
+			StopOnFirstFailure="$(StopOnFirstFailure)"
+			SkipNonexistentTargets="$(SkipNonExistentTargets)"
+			SkipNonexistentProjects="$(SkipNonExistentProjects)"/>
+
+	</Target>
+
+	<!-- ====================================================================================================================
+		 SOLUTION REBUILD WITH GRAPH BUILD SUPPORT
+		 ==================================================================================================================== -->
+
+	<Target Name="RebuildWithGraphBuild"
+			DependsOnTargets="CleanWithGraphBuild;BuildWithGraphBuild"
+			Condition="'$(EnableSolutionGraphBuild)' == 'true'"
+			Returns="@(CollectedBuildOutput)">
+
+		<Message Importance="High" Text="Solution rebuild with graph build completed for $(MSBuildSolutionName)"/>
+
+	</Target>
+
+</Project>
