@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+	<!--
+	========================================================================================================================
+											INTEGRATION TARGETS
+	========================================================================================================================
+	
+	This file contains targets for handling Project-to-Project and Project-to-Solution integrations.
+	It provides mechanisms for managing inter-project dependencies and cross-context operations.
+	
+	-->
+
+	<!-- ====================================================================================================================
+		 PROJECT-TO-PROJECT INTEGRATION
+		 ==================================================================================================================== -->
+
+	<PropertyGroup>
+		<!-- ProjectReference Integration - Enable/Disable per-target -->
+		<ResolveProjectReferenceDependenciesDependsOn>CollectProjectReferences;ValidateProjectReferenceDependencies</ResolveProjectReferenceDependenciesDependsOn>
+		<ProcessProjectReferenceDependenciesDependsOn>ResolveProjectReferenceDependencies</ProcessProjectReferenceDependenciesDependsOn>
+	</PropertyGroup>
+
+	<!-- Validates that all ProjectReferences are resolvable -->
+	<Target Name="ValidateProjectReferenceDependencies" 
+			DependsOnTargets="$(ResolveProjectReferenceDependenciesDependsOn)"
+			Condition="'$(SkipProjectReferenceValidation)' != 'true'">
+		
+		<ItemGroup>
+			<_InvalidProjectReferences Include="@(ProjectReference)" 
+										Condition="!Exists('%(ProjectReference.Identity)')"/>
+		</ItemGroup>
+
+		<Warning 
+			Code="PROJ0001" 
+			File="[MSBuild.Project.Sdk]"
+			Condition="'@(_InvalidProjectReferences)' != ''"
+			Text="The following ProjectReference(s) could not be found: @(_InvalidProjectReferences, '; '). These references may not be resolved correctly."/>
+
+	</Target>
+
+	<!-- Resolves and processes ProjectReference dependencies -->
+	<Target Name="ResolveProjectReferenceDependencies"
+			Returns="@(_ResolvedProjectDependency)"
+			DependsOnTargets="$(ResolveProjectReferenceDependenciesDependsOn)">
+
+		<ItemGroup>
+			<_ResolvedProjectDependency Include="@(ProjectReference)">
+				<!-- Capture project reference metadata for dependency tracking -->
+				<ProjectPath>%(ProjectReference.Identity)</ProjectPath>
+				<ReferenceType>ProjectReference</ReferenceType>
+				<IsCrossContext>false</IsCrossContext>
+				<!-- Extract target framework from project reference if available -->
+				<TargetFramework Condition="'%(ProjectReference.TargetFramework)' != ''">%(ProjectReference.TargetFramework)</TargetFramework>
+			</_ResolvedProjectDependency>
+		</ItemGroup>
+
+	</Target>
+
+	<!-- Processes transitive ProjectReference dependencies -->
+	<Target Name="ProcessProjectReferenceDependencies"
+			DependsOnTargets="$(ProcessProjectReferenceDependenciesDependsOn)"
+			Condition="'$(ProcessTransitiveDependencies)' == 'true'">
+
+		<!-- This target can be overridden by project-specific implementations -->
+		<Message 
+			Importance="Low" 
+			Text="Processing transitive ProjectReference dependencies for $(MSBuildProjectName)"/>
+
+	</Target>
+
+	<!-- ====================================================================================================================
+		 PROJECT-TO-SOLUTION INTEGRATION
+		 ==================================================================================================================== -->
+
+	<PropertyGroup>
+		<!-- Solution Integration Targets -->
+		<ResolveSolutionContextDependsOn>GetProjectMetadata;ValidateSolutionContext</ResolveSolutionContextDependsOn>
+		<ProcessSolutionContextDependsOn>ResolveSolutionContext</ProcessSolutionContextDependsOn>
+	</PropertyGroup>
+
+	<!-- Validates that the project is properly integrated in solution context -->
+	<Target Name="ValidateSolutionContext"
+			Condition="'$(MSBuildSolutionDirectory)' != ''"
+			DependsOnTargets="GetProjectMetadata">
+
+		<PropertyGroup>
+			<_ProjectInSolutionValid Condition="'$(MSBuildSolutionDirectory)' != '' AND '$(MSBuildProjectDirectory)' != ''">true</_ProjectInSolutionValid>
+		</PropertyGroup>
+
+		<Warning 
+			Code="PROJ0002"
+			File="[MSBuild.Project.Sdk]"
+			Condition="'$(_ProjectInSolutionValid)' != 'true'"
+			Text="Project $(MSBuildProjectName) is being built in a solution context, but solution directory information is incomplete."/>
+
+	</Target>
+
+	<!-- Resolves the solution context for the current project -->
+	<Target Name="ResolveSolutionContext"
+			Returns="@(_SolutionContext)"
+			DependsOnTargets="$(ResolveSolutionContextDependsOn)">
+
+		<ItemGroup>
+			<_SolutionContext Include="$(MSBuildSolutionDirectory)" Condition="'$(MSBuildSolutionDirectory)' != ''">
+				<ProjectName>$(MSBuildProjectName)</ProjectName>
+				<ProjectDirectory>$(MSBuildProjectDirectory)</ProjectDirectory>
+				<SolutionDirectory>$(MSBuildSolutionDirectory)</SolutionDirectory>
+				<SolutionName>$(MSBuildSolutionName)</SolutionName>
+				<Configuration>$(Configuration)</Configuration>
+				<Platform>$(Platform)</Platform>
+			</_SolutionContext>
+		</ItemGroup>
+
+	</Target>
+
+	<!-- Processes solution context information -->
+	<Target Name="ProcessSolutionContext"
+			DependsOnTargets="$(ProcessSolutionContextDependsOn)"
+			Condition="'$(MSBuildSolutionDirectory)' != ''">
+
+		<Message 
+			Importance="Low"
+			Text="Processing solution context for project $(MSBuildProjectName) in solution $(MSBuildSolutionName)"/>
+
+	</Target>
+
+	<!-- ====================================================================================================================
+		 CROSS-CONTEXT DEPENDENCY RESOLUTION
+		 ==================================================================================================================== -->
+
+	<PropertyGroup>
+		<!-- Cross-context dependency resolution targets -->
+		<ResolveCrossContextDependenciesDependsOn>ResolveProjectReferenceDependencies;ResolveSolutionContext</ResolveCrossContextDependenciesDependsOn>
+		<ValidateCrossContextDependenciesDependsOn>$(ResolveCrossContextDependenciesDependsOn)</ValidateCrossContextDependenciesDependsOn>
+	</PropertyGroup>
+
+	<!-- Validates all cross-context dependencies -->
+	<Target Name="ValidateCrossContextDependencies"
+			DependsOnTargets="$(ValidateCrossContextDependenciesDependsOn)"
+			Condition="'$(SkipCrossContextValidation)' != 'true'">
+
+		<Message 
+			Importance="Low"
+			Text="Validating cross-context dependencies for $(MSBuildProjectName)"/>
+
+	</Target>
+
+	<!-- Resolves all cross-context dependencies -->
+	<Target Name="ResolveCrossContextDependencies"
+			Returns="@(_CrossContextDependency)"
+			DependsOnTargets="$(ResolveCrossContextDependenciesDependsOn)">
+
+		<ItemGroup>
+			<!-- Combine project references and solution context -->
+			<_CrossContextDependency Include="@(_ResolvedProjectDependency)"/>
+			<_CrossContextDependency Include="@(_SolutionContext)">
+				<IsCrossContext>true</IsCrossContext>
+			</_CrossContextDependency>
+		</ItemGroup>
+
+	</Target>
+
+	<!-- ====================================================================================================================
+		 GRAPH BUILD SUPPORT
+		 ==================================================================================================================== -->
+
+	<PropertyGroup>
+		<!-- Graph Build Configuration -->
+		<EnableGraphBuild Condition="'$(EnableGraphBuild)' == ''">true</EnableGraphBuild>
+		<GraphBuildDependsOn>ValidateCrossContextDependencies;ResolveCrossContextDependencies</GraphBuildDependsOn>
+		<PrepareGraphBuildDependsOn>$(GraphBuildDependsOn)</PrepareGraphBuildDependsOn>
+	</PropertyGroup>
+
+	<!-- Prepares the build graph for parallel execution -->
+	<Target Name="PrepareGraphBuild"
+			DependsOnTargets="$(PrepareGraphBuildDependsOn)"
+			Condition="'$(EnableGraphBuild)' == 'true'">
+
+		<PropertyGroup>
+			<_GraphBuildEnabled>true</_GraphBuildEnabled>
+		</PropertyGroup>
+
+		<Message 
+			Importance="Low"
+			Text="Preparing graph build for project $(MSBuildProjectName)"/>
+
+	</Target>
+
+	<!-- Validates the build graph structure -->
+	<Target Name="ValidateGraphBuild"
+			DependsOnTargets="PrepareGraphBuild"
+			Condition="'$(EnableGraphBuild)' == 'true'">
+
+		<Message 
+			Importance="Low"
+			Text="Validating build graph for project $(MSBuildProjectName)"/>
+
+	</Target>
+
+	<!-- ====================================================================================================================
+		 INTEGRATION INTO MAIN TARGET CHAIN
+		 ==================================================================================================================== -->
+
+	<!-- Update RestoreDependsOn to include integration validation -->
+	<PropertyGroup>
+		<RestoreDependsOn>$(RestoreDependsOn);ValidateProjectReferenceDependencies</RestoreDependsOn>
+	</PropertyGroup>
+
+	<!-- Update BuildDependsOn to include graph build preparation -->
+	<PropertyGroup>
+		<BuildDependsOn Condition="'$(EnableGraphBuild)' == 'true'">$(BuildDependsOn);PrepareGraphBuild;ValidateGraphBuild</BuildDependsOn>
+	</PropertyGroup>
+
+	<!-- Update CleanDependsOn to include integration cleanup -->
+	<PropertyGroup>
+		<CleanDependsOn>$(CleanDependsOn);ValidateProjectReferenceDependencies</CleanDependsOn>
+	</PropertyGroup>
+
+</Project>
